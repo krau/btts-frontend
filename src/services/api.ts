@@ -5,6 +5,8 @@ import type {
   SearchOnMultiChatRequest,
   IndexChat,
   ApiResponse,
+  ReplyMessageRequest,
+  ReplyMessageResponse,
 } from '@/types/api'
 
 class ApiService {
@@ -105,6 +107,14 @@ class ApiService {
         semanticHitCount: 0,
       }
     )
+  }
+
+  async replyMessage(request: ReplyMessageRequest): Promise<ReplyMessageResponse> {
+    const api = this.createKyInstance()
+    const response = await api
+      .post('client/reply', { json: request })
+      .json<ReplyMessageResponse>()
+    return response
   }
 }
 

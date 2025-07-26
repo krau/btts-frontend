@@ -55,6 +55,18 @@ export interface IndexChat {
   watching: boolean
 }
 
+export interface ReplyMessageRequest {
+  chat_id: number
+  message_id: number
+  text: string
+}
+
+export interface ReplyMessageResponse {
+  status: string
+  message: string
+  // data: any // [TODO]
+}
+
 export interface ApiResponse<T> {
   status: string
   results?: T
