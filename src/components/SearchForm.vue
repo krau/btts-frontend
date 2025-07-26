@@ -152,20 +152,20 @@
             </div>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="5">
-              <span>5 条</span>
+            <SelectItem value="6">
+              <span>6 条</span>
             </SelectItem>
-            <SelectItem value="10">
-              <span>10 条</span>
+            <SelectItem value="12">
+              <span>12 条</span>
             </SelectItem>
-            <SelectItem value="20">
-              <span>20 条</span>
+            <SelectItem value="24">
+              <span>24 条</span>
             </SelectItem>
-            <SelectItem value="50">
-              <span>50 条</span>
+            <SelectItem value="48">
+              <span>48 条</span>
             </SelectItem>
-            <SelectItem value="100">
-              <span>100 条</span>
+            <SelectItem value="90">
+              <span>90 条</span>
             </SelectItem>
           </SelectContent>
         </Select>
