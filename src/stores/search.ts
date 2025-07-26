@@ -49,7 +49,6 @@ export const useSearchStore = defineStore('search', () => {
     try {
       indexedChats.value = await apiService.getIndexedChats()
     } catch (error) {
-      console.error('Failed to load indexed chats:', error)
       throw error
     } finally {
       isLoadingChats.value = false

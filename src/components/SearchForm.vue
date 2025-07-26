@@ -40,9 +40,7 @@
             <Checkbox
               :id="type"
               :checked="selectedTypes.includes(type)"
-              @update:checked="
-                (checked: boolean | 'indeterminate') => handleTypeChange(type, checked)
-              "
+              @update:model-value="(checked: boolean | 'indeterminate') => handleTypeChange(type, checked)"
             />
             <label
               :for="type"
