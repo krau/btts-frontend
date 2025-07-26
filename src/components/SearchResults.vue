@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4">
+  <div class="space-y-4" ref="searchResultsContainer">
     <!-- 搜索结果列表 -->
     <div v-if="searchResults.length > 0" class="space-y-3">
       <Card
@@ -9,18 +9,6 @@
       >
         <CardContent class="p-4">
           <div class="space-y-3">
-            <!-- 消息头部信息 -->
-            <!-- <div class="flex items-start justify-between">
-              <div class="flex items-center space-x-2">
-                <Badge :variant="getMessageTypeVariant(hit.type)">
-                  {{ formatMessageType(hit.type) }}
-                </Badge>
-              </div>
-              <div class="text-right text-sm">
-                <div>ID: {{ hit.id }}</div>
-              </div>
-            </div> -->
-
             <!-- 用户和聊天信息 -->
             <div class="flex items-center justify-between text-sm">
               <div class="flex items-center space-x-2">
@@ -29,11 +17,11 @@
                 </Badge>
                 <UserIcon class="h-4 w-4 text-muted-foreground" />
                 <span class="font-medium">
-                  {{ hit.user_full_name || `User ${hit.user_id}` }}
+                  {{ hit.user_full_name }}
                 </span>
               </div>
               <a
-                class="flex items-center space-x-2"
+                class="flex items-center space-x-2 text-muted-foreground hover:text-primary"
                 :href="`https://t.me/c/${hit.chat_id}/${hit.id}`"
                 target="_blank"
               >
@@ -177,6 +165,9 @@ const searchStore = useSearchStore()
 const { searchResults, isLoading, totalHits, totalPages, currentPage, pageSize, query } =
   storeToRefs(searchStore)
 
+// 搜索结果容器引用
+const searchResultsContainer = ref<HTMLElement>()
+
 // 展开的消息
 const expandedMessages = ref(new Set<number>())
 
@@ -230,5 +221,12 @@ function handlePageChange(page: number) {
 // 跳转到指定页面
 function goToPage(page: number) {
   searchStore.goToPage(page)
+  // 翻页后滚动到搜索结果容器顶部，提升用户体验
+  if (searchResultsContainer.value) {
+    searchResultsContainer.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  } else {
+    // 如果容器引用不可用，回退到滚动到页面顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 }
 </script>
