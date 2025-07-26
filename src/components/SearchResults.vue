@@ -2,7 +2,7 @@
   <div class="space-y-4" ref="searchResultsContainer">
     <!-- 搜索结果列表 -->
     <div
-      v-if="searchResults.length > 0"
+      v-if="searchResults.length > 0 && !isLoading"
       class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
     >
       <Card

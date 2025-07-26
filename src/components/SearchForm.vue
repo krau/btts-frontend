@@ -53,7 +53,7 @@
           </div>
 
           <!-- 聊天列表 -->
-          <div class="border rounded-md max-h-16 overflow-y-auto p-1 bg-background">
+          <div class="border rounded-md max-h-32 overflow-y-auto p-1 bg-background">
             <div v-if="isLoadingChats" class="flex items-center justify-center p-4">
               <LoaderIcon class="h-4 w-4 animate-spin mr-2" />
               <span class="text-sm">加载中...</span>
