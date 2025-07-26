@@ -21,21 +21,21 @@
       <Select :model-value="pageSize.toString()" @update:model-value="handlePageSizeChange">
         <SelectTrigger class="h-10 shadow hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between w-full">
-        <span>每页 {{ pageSize }} 条</span>
+            <span>每页 {{ pageSize }} 条</span>
           </div>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="12">
-        <span>12 条</span>
+            <span>12 条</span>
           </SelectItem>
           <SelectItem value="24">
-        <span>24 条</span>
+            <span>24 条</span>
           </SelectItem>
           <SelectItem value="48">
-        <span>48 条</span>
+            <span>48 条</span>
           </SelectItem>
           <SelectItem value="90">
-        <span>90 条</span>
+            <span>90 条</span>
           </SelectItem>
         </SelectContent>
       </Select>
@@ -157,6 +157,22 @@
           </div>
         </div>
       </div>
+
+      <!-- 用户id -->
+      <div class="space-y-2">
+        <label class="text-sm font-medium flex items-center">
+          <UserIcon class="h-4 w-4 mr-2 text-primary" />
+          用户ID
+        </label>
+        <TagsInput v-model="userIdInputs">
+          <TagsInputItem v-for="user in userIdInputs" :key="user" :value="user">
+            <TagsInputItemText />
+            <TagsInputItemDelete />
+          </TagsInputItem>
+
+          <TagsInputInput placeholder="输入用户ID（仅限数字）..." />
+        </TagsInput>
+      </div>
     </div>
   </div>
 
@@ -202,6 +218,13 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useSearchStore } from '@/stores/search'
 import { MESSAGE_TYPES } from '@/types/api'
 import { formatMessageType } from '@/utils/helpers'
+import {
+  TagsInput,
+  TagsInputInput,
+  TagsInputItem,
+  TagsInputItemDelete,
+  TagsInputItemText,
+} from '@/components/ui/tags-input'
 
 const searchStore = useSearchStore()
 const {
@@ -220,6 +243,7 @@ const {
 // 本地状态
 const localQuery = ref(query.value)
 const chatSearchQuery = ref('')
+const userIdInputs = ref<string[]>([])
 
 // 获取消息类型对应的图标
 function getMessageTypeIcon(type: string) {
@@ -257,6 +281,12 @@ const filteredChats = computed(() => {
 // 监听 query 变化
 watch(query, (newQuery) => {
   localQuery.value = newQuery
+})
+
+// 监听 userIdInputs 变化
+watch(userIdInputs, (newUserIds) => {
+  const validUserIds = newUserIds.map((id) => id.trim()).filter((id) => /^\d+$/.test(id)) // 仅保留数字ID
+  searchStore.setSelectedUserIds(validUserIds.map(Number))
 })
 
 // 处理搜索
