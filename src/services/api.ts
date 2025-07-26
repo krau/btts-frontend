@@ -21,6 +21,7 @@ class ApiService {
   setApiKey(key: string) {
     this.apiKey = key
     localStorage.setItem('btts_api_key', key)
+    this.instance = this.createKyInstance()
   }
 
   getApiKey() {

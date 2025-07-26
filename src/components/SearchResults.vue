@@ -5,7 +5,7 @@
       <Card
         v-for="hit in searchResults"
         :key="`${hit.chat_id}-${hit.id}`"
-        class="message-card transition-all duration-200 hover:shadow-md hover:-translate-y-1"
+        class="transition-all duration-200"
       >
         <CardContent class="p-4">
           <div class="space-y-3">
