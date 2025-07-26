@@ -125,7 +125,7 @@
 
 /* 搜索结果高亮 */
 mark {
-  background-color: rgb(250 201 138);
+  background-color: rgba(69, 223, 189, 0.747);
   padding: 0.125rem 0.25rem;
   border-radius: 0.25rem;
   color: inherit;
@@ -133,7 +133,7 @@ mark {
 }
 
 .dark mark {
-  background-color: rgb(133 77 14);
+  background-color: rgba(18, 235, 144, 0.5);
 }
 
 /* 自定义滚动条 */
@@ -155,28 +155,6 @@ mark {
   background-color: hsl(var(--muted-foreground) / 0.5);
 }
 
-/* 加载动画 */
-@keyframes shimmer {
-  0% {
-    background-position: -468px 0;
-  }
-
-  100% {
-    background-position: 468px 0;
-  }
-}
-
-.shimmer {
-  animation: shimmer 1.5s ease-in-out infinite;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.05) 50%,
-    transparent 100%
-  );
-  background-size: 468px 100%;
-}
-
 /* 响应式调整 */
 @media (max-width: 640px) {
   .container {
@@ -190,28 +168,6 @@ mark {
   word-break: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
-}
-
-/* 状态指示器 */
-.status-indicator {
-  position: relative;
-}
-
-.status-indicator::before {
-  content: '';
-  position: absolute;
-  inset: -0.25rem;
-  background-color: hsl(var(--primary) / 0.2);
-  border-radius: 9999px;
-  animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
-}
-
-.status-indicator::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-color: hsl(var(--primary));
-  border-radius: 9999px;
 }
 
 /* 焦点样式 */

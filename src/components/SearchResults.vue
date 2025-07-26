@@ -10,61 +10,67 @@
         <CardContent class="p-4">
           <div class="space-y-3">
             <!-- 消息头部信息 -->
-            <div class="flex items-start justify-between">
+            <!-- <div class="flex items-start justify-between">
               <div class="flex items-center space-x-2">
                 <Badge :variant="getMessageTypeVariant(hit.type)">
                   {{ formatMessageType(hit.type) }}
                 </Badge>
-                <span class="text-sm text-muted-foreground">
-                  {{ formatTimestamp(hit.timestamp) }}
-                </span>
               </div>
-              <div class="text-right text-sm text-muted-foreground">
+              <div class="text-right text-sm">
                 <div>ID: {{ hit.id }}</div>
               </div>
-            </div>
+            </div> -->
 
             <!-- 用户和聊天信息 -->
             <div class="flex items-center justify-between text-sm">
               <div class="flex items-center space-x-2">
+                <Badge :variant="getMessageTypeVariant(hit.type)">
+                  {{ formatMessageType(hit.type) }}
+                </Badge>
                 <UserIcon class="h-4 w-4 text-muted-foreground" />
                 <span class="font-medium">
                   {{ hit.user_full_name || `User ${hit.user_id}` }}
                 </span>
               </div>
-              <div class="flex items-center space-x-2">
+              <a
+                class="flex items-center space-x-2"
+                :href="`https://t.me/c/${hit.chat_id}/${hit.id}`"
+                target="_blank"
+              >
                 <MessageCircleIcon class="h-4 w-4 text-muted-foreground" />
                 <span>
                   {{ hit.chat_title || `Chat ${hit.chat_id}` }}
                 </span>
-              </div>
+              </a>
             </div>
 
             <!-- 消息内容 -->
             <div class="space-y-2">
               <div
-                class="message-content text-sm leading-relaxed p-3 bg-muted/30 rounded-md break-words"
+                class="message-content text-sm leading-relaxed p-3 bg-muted/50 rounded-md break-words"
                 v-html="highlightedMessage(hit)"
               />
-
-              <!-- 如果消息太长，显示完整消息的切换按钮 -->
-              <div class="text-right">
-                <Button variant="ghost" size="sm" @click="toggleExpanded(hit.id)">
-                  {{ expandedMessages.has(hit.id) ? '收起' : '展开全文' }}
-                </Button>
-              </div>
             </div>
 
             <!-- 操作按钮 -->
             <div class="flex items-center justify-between pt-2">
-              <div class="flex items-center space-x-2 text-xs text-muted-foreground">
+              <div class="flex items-center space-x-2 text-sm text-muted-foreground">
                 <ClockIcon class="h-3 w-3" />
-                <span>{{ new Date(hit.timestamp * 1000).toLocaleString('zh-CN') }}</span>
+                <span>{{ formatTimestamp(hit.timestamp) }}</span>
               </div>
-              <Button variant="outline" size="sm" @click="copyMessage(hit.message)">
-                <CopyIcon class="mr-1 h-3 w-3" />
-                复制
-              </Button>
+              <div class="flex items-center space-x-2">
+                <Button variant="outline" size="sm" @click="toggleExpanded(hit.id)">
+                  <ArrowDownIcon
+                    class="mr-1 h-3 w-3"
+                    :class="expandedMessages.has(hit.id) ? 'rotate-180' : ''"
+                  />
+                  {{ expandedMessages.has(hit.id) ? '收起全文' : '展开全文' }}
+                </Button>
+                <Button variant="outline" size="sm" @click="copyMessage(hit.message)">
+                  <CopyIcon class="mr-1 h-3 w-3" />
+                  复制
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -135,7 +141,14 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { UserIcon, MessageCircleIcon, ClockIcon, CopyIcon, SearchXIcon } from 'lucide-vue-next'
+import {
+  UserIcon,
+  MessageCircleIcon,
+  ClockIcon,
+  CopyIcon,
+  SearchXIcon,
+  ArrowDownIcon,
+} from 'lucide-vue-next'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -200,13 +213,8 @@ function highlightedMessage(hit: SearchHit): string {
 async function copyMessage(message: string) {
   try {
     await navigator.clipboard.writeText(message)
-    // 使用动态导入来避免编译时错误
-    const { toast } = await import('vue-sonner')
-    toast.success('消息已复制到剪贴板')
   } catch (error) {
     console.error('复制失败:', error)
-    const { toast } = await import('vue-sonner')
-    toast.error('复制失败，请重试')
   }
 }
 
