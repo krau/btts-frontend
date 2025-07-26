@@ -33,7 +33,7 @@
       </div>
 
       <DialogFooter class="mt-4">
-        <Button variant="outline" size="sm" @click="copyMessage" class="mr-2">
+        <Button variant="outline" @click="copyMessage" class="mr-2">
           <CopyIcon class="mr-1 h-4 w-4" />
           复制全文
         </Button>
