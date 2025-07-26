@@ -16,7 +16,10 @@
                   {{ formatMessageType(hit.type) }}
                 </Badge>
                 <UserIcon class="h-4 w-4 text-muted-foreground" />
-                <span class="font-medium cursor-pointer" @click="copyMessage(hit.user_id.toString())">
+                <span
+                  class="font-medium cursor-pointer"
+                  @click="copyMessage(hit.user_id.toString())"
+                >
                   {{ hit.user_full_name }}
                 </span>
               </div>
