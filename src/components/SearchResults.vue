@@ -53,12 +53,9 @@
                 <span>{{ formatTimestamp(hit.timestamp) }}</span>
               </div>
               <div class="flex items-center space-x-2">
-                <Button variant="outline" size="sm" @click="toggleExpanded(hit.id)">
-                  <ArrowDownIcon
-                    class="mr-1 h-3 w-3"
-                    :class="expandedMessages.has(hit.id) ? 'rotate-180' : ''"
-                  />
-                  {{ expandedMessages.has(hit.id) ? '收起全文' : '展开全文' }}
+                <Button variant="outline" size="sm" @click="openMessageDialog(hit)">
+                  <ArrowDownIcon class="mr-1 h-3 w-3" />
+                  查看全文
                 </Button>
                 <Button variant="outline" size="sm" @click="copyMessage(hit.message)">
                   <CopyIcon class="mr-1 h-3 w-3" />
@@ -129,6 +126,59 @@
         </PaginationContent>
       </Pagination>
     </div>
+
+    <!-- 消息全文对话框 -->
+    <Dialog v-model:open="isMessageDialogOpen">
+      <DialogContent class="sm:max-w-[600px] max-h-[80vh]">
+        <DialogHeader>
+          <DialogTitle class="flex items-center space-x-2">
+            <Badge
+              v-if="selectedMessage"
+              :variant="getMessageTypeVariant(selectedMessage.type)"
+              class="mr-2"
+            >
+              {{ formatMessageType(selectedMessage?.type || '') }}
+            </Badge>
+            <span v-if="selectedMessage?.user_full_name">{{ selectedMessage.user_full_name }}</span>
+          </DialogTitle>
+        </DialogHeader>
+
+        <div class="mt-2 overflow-y-auto" style="max-height: 50vh">
+          <div
+            v-if="selectedMessage?.chat_title"
+            class="mb-4 text-sm text-muted-foreground flex items-center"
+          >
+            <MessageCircleIcon class="h-4 w-4 mr-2" />
+            <a
+              :href="`https://t.me/c/${selectedMessage?.chat_id}/${selectedMessage?.id}`"
+              target="_blank"
+              class="hover:text-primary transition-colors"
+            >
+              {{ selectedMessage.chat_title }}
+            </a>
+          </div>
+
+          <div
+            v-if="selectedMessage"
+            class="message-content text-sm leading-relaxed p-4 bg-muted/50 rounded-md break-words"
+            v-html="highlightedFullMessage"
+          ></div>
+        </div>
+
+        <DialogFooter class="mt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            @click="copyMessage(selectedMessage?.message || '')"
+            class="mr-2"
+          >
+            <CopyIcon class="mr-1 h-4 w-4" />
+            复制全文
+          </Button>
+          <Button @click="closeMessageDialog">关闭</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
 
@@ -156,6 +206,13 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
 import { toast } from 'vue-sonner'
 
 import { useSearchStore } from '@/stores/search'
@@ -174,8 +231,9 @@ const { searchResults, isLoading, totalHits, totalPages, currentPage, pageSize, 
 // 搜索结果容器引用
 const searchResultsContainer = ref<HTMLElement>()
 
-// 展开的消息
-const expandedMessages = ref(new Set<number>())
+// 对话框状态
+const isMessageDialogOpen = ref(false)
+const selectedMessage = ref<SearchHit | null>(null)
 
 // 计算可见的页码
 const visiblePages = computed(() => {
@@ -190,22 +248,26 @@ const visiblePages = computed(() => {
   return pages
 })
 
-// 切换消息展开状态
-function toggleExpanded(messageId: number) {
-  if (expandedMessages.value.has(messageId)) {
-    expandedMessages.value.delete(messageId)
-  } else {
-    expandedMessages.value.add(messageId)
-  }
-}
-
 // 获取高亮的消息内容
 function highlightedMessage(hit: SearchHit): string {
-  const message = expandedMessages.value.has(hit.id)
-    ? hit.message
-    : hit._formatted?.message || hit.message
+  return highlightSearchTerms(hit._formatted?.message || hit.message, query.value)
+}
 
-  return highlightSearchTerms(message, query.value)
+// 获取高亮的完整消息内容
+const highlightedFullMessage = computed(() => {
+  if (!selectedMessage.value) return ''
+  return highlightSearchTerms(selectedMessage.value.message, query.value)
+})
+
+// 打开消息对话框
+function openMessageDialog(hit: SearchHit) {
+  selectedMessage.value = hit
+  isMessageDialogOpen.value = true
+}
+
+// 关闭消息对话框
+function closeMessageDialog() {
+  isMessageDialogOpen.value = false
 }
 
 // 复制消息内容
