@@ -23,7 +23,7 @@ class ApiService {
   setApiKey(key: string) {
     this.apiKey = key
     localStorage.setItem('btts_api_key', key)
-    this.instance = this.createKyInstance()
+    this.recreateKyInstance()
   }
 
   getApiKey() {
@@ -33,6 +33,7 @@ class ApiService {
   clearApiKey() {
     this.apiKey = null
     localStorage.removeItem('btts_api_key')
+    this.recreateKyInstance()
   }
 
   private getHeaders() {
@@ -57,6 +58,14 @@ class ApiService {
       timeout: 30000,
     })
     return this.instance
+  }
+
+  private recreateKyInstance() {
+    this.instance = ky.create({
+      prefixUrl: this.baseURL,
+      headers: this.getHeaders(),
+      timeout: 30000,
+    })
   }
 
   // 获取所有已索引的聊天
