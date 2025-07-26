@@ -18,6 +18,27 @@
         <LoaderIcon v-else class="mr-2 h-4 w-4 animate-spin" />
         {{ isLoading ? '搜索中...' : '搜索' }}
       </Button>
+      <Select :model-value="pageSize.toString()" @update:model-value="handlePageSizeChange">
+        <SelectTrigger class="h-10 shadow hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between w-full">
+        <span>每页 {{ pageSize }} 条</span>
+          </div>
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="12">
+        <span>12 条</span>
+          </SelectItem>
+          <SelectItem value="24">
+        <span>24 条</span>
+          </SelectItem>
+          <SelectItem value="48">
+        <span>48 条</span>
+          </SelectItem>
+          <SelectItem value="90">
+        <span>90 条</span>
+          </SelectItem>
+        </SelectContent>
+      </Select>
     </div>
 
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -135,40 +156,6 @@
             </label>
           </div>
         </div>
-      </div>
-
-      <!-- 每页数量 -->
-      <div class="space-y-2">
-        <label class="text-sm font-medium flex items-center">
-          <BookIcon class="h-4 w-4 mr-2 text-primary" />
-          每页显示
-        </label>
-        <Select :model-value="pageSize.toString()" @update:model-value="handlePageSizeChange">
-          <SelectTrigger
-            class="transition-all hover:border-primary focus:ring-2 focus:ring-primary/20"
-          >
-            <div class="flex items-center justify-between w-full">
-              <span>{{ pageSize }} 条</span>
-            </div>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="6">
-              <span>6 条</span>
-            </SelectItem>
-            <SelectItem value="12">
-              <span>12 条</span>
-            </SelectItem>
-            <SelectItem value="24">
-              <span>24 条</span>
-            </SelectItem>
-            <SelectItem value="48">
-              <span>48 条</span>
-            </SelectItem>
-            <SelectItem value="90">
-              <span>90 条</span>
-            </SelectItem>
-          </SelectContent>
-        </Select>
       </div>
     </div>
   </div>
