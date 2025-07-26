@@ -23,28 +23,80 @@
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       <!-- 聊天选择 -->
       <div class="space-y-2">
-        <label class="text-sm font-medium flex items-center">
-          <MessageSquareIcon class="h-4 w-4 mr-2 text-primary" />
-          选择聊天
-        </label>
-        <Select
-          v-model="selectedChatIds"
-          multiple
-          @update:model-value="handleSelectedChatIdsChange"
-        >
-          <SelectTrigger
-            class="transition-all hover:border-primary focus:ring-2 focus:ring-primary/20"
+        <div class="flex items-center justify-between">
+          <label class="text-sm font-medium flex items-center">
+            <MessageSquareIcon class="h-4 w-4 mr-2 text-primary" />
+            选择聊天
+          </label>
+          <Button
+            variant="outline"
+            size="icon"
+            class="h-7 w-7"
+            title="刷新聊天列表"
+            @click="handleRefreshChats"
+            :disabled="isLoadingChats"
           >
-            <div class="flex items-center">
-              <SelectValue :placeholder="selectedChatIdsPlaceholder" />
+            <RefreshCwIcon class="h-4 w-4" :class="{ 'animate-spin': isLoadingChats }" />
+          </Button>
+        </div>
+        <div class="relative">
+          <!-- 搜索聊天输入框 -->
+          <div class="relative mb-1.5">
+            <SearchIcon
+              class="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              v-model="chatSearchQuery"
+              placeholder="搜索聊天..."
+              class="pl-8 pr-3 py-1 h-8 text-sm"
+            />
+          </div>
+
+          <!-- 聊天列表 -->
+          <div class="border rounded-md max-h-16 overflow-y-auto p-1 bg-background">
+            <div v-if="isLoadingChats" class="flex items-center justify-center p-4">
+              <LoaderIcon class="h-4 w-4 animate-spin mr-2" />
+              <span class="text-sm">加载中...</span>
             </div>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="chat in indexedChats" :key="chat.chat_id" :value="chat.chat_id">
-              {{ chat.title }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
+            <div
+              v-else-if="indexedChats.length === 0"
+              class="flex items-center justify-center p-4 text-muted-foreground"
+            >
+              <span class="text-sm">没有可用的聊天</span>
+            </div>
+            <div v-else class="space-y-0.5">
+              <div
+                v-for="chat in filteredChats"
+                :key="chat.chat_id"
+                class="flex items-center space-x-2 px-1.5 py-1 hover:bg-muted/50 rounded text-sm"
+              >
+                <Checkbox
+                  :id="`chat-${chat.chat_id}`"
+                  :checked="selectedChatIds.includes(chat.chat_id)"
+                  @update:model-value="
+                    (checked: boolean | 'indeterminate') =>
+                      handleChatCheckboxChange(chat.chat_id, checked)
+                  "
+                />
+                <label
+                  :for="`chat-${chat.chat_id}`"
+                  class="flex-1 cursor-pointer truncate"
+                  :title="chat.title || String(chat.chat_id)"
+                >
+                  {{ chat.title || chat.chat_id }}
+                </label>
+              </div>
+            </div>
+
+            <!-- 没有搜索结果 -->
+            <div
+              v-if="!isLoadingChats && indexedChats.length > 0 && filteredChats.length === 0"
+              class="flex items-center justify-center p-3 text-muted-foreground"
+            >
+              <span class="text-sm">没有匹配的聊天</span>
+            </div>
+          </div>
+        </div>
         <p class="text-xs text-muted-foreground mt-1">
           {{
             selectedChatIds.length === 0
@@ -140,7 +192,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import {
   SearchIcon,
@@ -153,17 +205,12 @@ import {
   BarChartIcon,
   BookIcon,
   LayersIcon,
+  RefreshCwIcon,
 } from 'lucide-vue-next'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useSearchStore } from '@/stores/search'
 import { MESSAGE_TYPES } from '@/types/api'
@@ -180,10 +227,12 @@ const {
   semanticHitCount,
   indexedChats,
   selectedChatIds,
+  isLoadingChats,
 } = storeToRefs(searchStore)
 
 // 本地状态
 const localQuery = ref(query.value)
+const chatSearchQuery = ref('')
 
 // 获取消息类型对应的图标
 function getMessageTypeIcon(type: string) {
@@ -208,18 +257,16 @@ function getMessageTypeIcon(type: string) {
   }
 }
 
-// 计算属性
-const selectedChatIdsPlaceholder = computed(() => {
-  if (selectedChatIds.value.length === 0) {
-    return '所有聊天'
-  } else if (selectedChatIds.value.length === 1) {
-    const chat = indexedChats.value.find((c) => c.chat_id === selectedChatIds.value[0])
-    return chat ? chat.title : '1个聊天'
-  } else {
-    return `${selectedChatIds.value.length}个聊天`
-  }
-})
+// 计算属性：过滤后的聊天列表
+const filteredChats = computed(() => {
+  const searchTerm = chatSearchQuery.value.trim().toLowerCase()
+  if (!searchTerm) return indexedChats.value
 
+  return indexedChats.value.filter((chat) => {
+    const title = (chat.title || String(chat.chat_id)).toLowerCase()
+    return title.includes(searchTerm)
+  })
+})
 // 监听 query 变化
 watch(query, (newQuery) => {
   localQuery.value = newQuery
@@ -257,9 +304,30 @@ function handlePageSizeChange(value: unknown) {
   searchStore.setPageSize(parseInt(String(value)))
 }
 
-// 处理选中聊天变化
-function handleSelectedChatIdsChange(value: unknown) {
-  searchStore.setSelectedChatIds(value as number[])
+// 处理聊天勾选变化
+function handleChatCheckboxChange(chatId: number, checked: boolean | 'indeterminate') {
+  if (checked === 'indeterminate') return
+  const chatIds = [...selectedChatIds.value]
+  if (checked) {
+    if (!chatIds.includes(chatId)) {
+      chatIds.push(chatId)
+    }
+  } else {
+    const index = chatIds.indexOf(chatId)
+    if (index > -1) {
+      chatIds.splice(index, 1)
+    }
+  }
+  searchStore.setSelectedChatIds(chatIds)
+}
+
+// 刷新聊天列表
+async function handleRefreshChats() {
+  try {
+    await searchStore.loadIndexedChats()
+  } catch (error) {
+    console.error('无法刷新聊天列表:', error)
+  }
 }
 
 // 在组件挂载时加载聊天列表

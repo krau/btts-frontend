@@ -16,7 +16,7 @@
                   {{ formatMessageType(hit.type) }}
                 </Badge>
                 <UserIcon class="h-4 w-4 text-muted-foreground" />
-                <span class="font-medium">
+                <span class="font-medium cursor-pointer" @click="copyMessage(hit.user_id.toString())">
                   {{ hit.user_full_name }}
                 </span>
               </div>
@@ -206,7 +206,7 @@ function highlightedMessage(hit: SearchHit): string {
 async function copyMessage(message: string) {
   try {
     await navigator.clipboard.writeText(message)
-    toast.success('消息已复制到剪贴板')
+    toast.success('已复制到剪贴板')
   } catch (error) {
     console.error('复制失败:', error)
     toast.error('复制失败，请重试')
