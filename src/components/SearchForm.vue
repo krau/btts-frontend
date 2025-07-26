@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
     <!-- 搜索输入框 -->
-    <div class="relative">
+    <div class="relative flex items-center space-x-4">
       <SearchIcon class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         v-model="localQuery"
@@ -9,6 +9,11 @@
         class="pl-9 pr-4"
         @keydown.enter="handleSearch"
       />
+      <Button @click="handleSearch" :disabled="!localQuery.trim() || isLoading">
+        <SearchIcon v-if="!isLoading" class="mr-2 h-4 w-4" />
+        <LoaderIcon v-else class="mr-2 h-4 w-4 animate-spin" />
+        {{ isLoading ? '搜索中...' : '搜索' }}
+      </Button>
     </div>
 
     <!-- 过滤器 -->
@@ -62,21 +67,13 @@
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="5">5 条</SelectItem>
             <SelectItem value="10">10 条</SelectItem>
             <SelectItem value="20">20 条</SelectItem>
             <SelectItem value="50">50 条</SelectItem>
             <SelectItem value="100">100 条</SelectItem>
           </SelectContent>
         </Select>
-      </div>
-
-      <!-- 搜索按钮 -->
-      <div class="flex items-end">
-        <Button @click="handleSearch" :disabled="!localQuery.trim() || isLoading" class="w-full">
-          <SearchIcon v-if="!isLoading" class="mr-2 h-4 w-4" />
-          <LoaderIcon v-else class="mr-2 h-4 w-4 animate-spin" />
-          {{ isLoading ? '搜索中...' : '搜索' }}
-        </Button>
       </div>
     </div>
 
