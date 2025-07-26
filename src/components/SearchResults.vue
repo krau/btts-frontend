@@ -155,7 +155,6 @@ import {
   formatMessageType,
   getMessageTypeVariant,
   highlightSearchTerms,
-  truncateText,
 } from '@/utils/helpers'
 import type { SearchHit } from '@/types/api'
 
@@ -190,14 +189,9 @@ function toggleExpanded(messageId: number) {
 
 // 获取高亮的消息内容
 function highlightedMessage(hit: SearchHit): string {
-  const message = expandedMessages.value.has(hit.id) ? hit.message : truncateText(hit.message, 300)
-
-  // 优先使用格式化后的内容
-  if (hit._formatted?.message) {
-    return expandedMessages.value.has(hit.id)
-      ? hit._formatted.message
-      : truncateText(hit._formatted.message, 300)
-  }
+  const message = expandedMessages.value.has(hit.id)
+    ? hit.message
+    : hit._formatted?.message || hit.message
 
   return highlightSearchTerms(message, query.value)
 }

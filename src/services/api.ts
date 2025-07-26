@@ -1,4 +1,4 @@
-import ky from 'ky'
+import ky, { type KyInstance } from 'ky'
 import type {
   SearchResponse,
   SearchOnChatRequest,
@@ -10,10 +10,12 @@ import type {
 class ApiService {
   private baseURL: string
   private apiKey: string | null = null
+  private instance: KyInstance
 
   constructor() {
     this.baseURL = '/api'
     this.apiKey = localStorage.getItem('btts_api_key')
+    this.instance = this.createKyInstance()
   }
 
   setApiKey(key: string) {
@@ -43,11 +45,15 @@ class ApiService {
   }
 
   private createKyInstance() {
-    return ky.create({
+    if (this.instance) {
+      return this.instance
+    }
+    this.instance = ky.create({
       prefixUrl: this.baseURL,
       headers: this.getHeaders(),
       timeout: 30000,
     })
+    return this.instance
   }
 
   // 获取所有已索引的聊天
@@ -62,41 +68,6 @@ class ApiService {
     const api = this.createKyInstance()
     const response = await api.get(`index/${chatId}`).json<ApiResponse<IndexChat>>()
     return response.index || null
-  }
-
-  // 在指定聊天中搜索消息 (GET方法)
-  async searchInChatByGet(
-    chatId: number,
-    query: string,
-    options: {
-      offset?: number
-      limit?: number
-      users?: number[]
-      types?: string[]
-    } = {},
-  ): Promise<SearchResponse> {
-    const api = this.createKyInstance()
-    const searchParams = new URLSearchParams()
-
-    searchParams.set('q', query)
-    if (options.offset !== undefined) searchParams.set('offset', options.offset.toString())
-    if (options.limit !== undefined) searchParams.set('limit', options.limit.toString())
-    if (options.users?.length) searchParams.set('users', options.users.join(','))
-    if (options.types?.length) searchParams.set('types', options.types.join(','))
-
-    const response = await api
-      .get(`index/${chatId}/search`, { searchParams })
-      .json<ApiResponse<SearchResponse>>()
-    return (
-      response.results || {
-        hits: [],
-        estimatedTotalHits: 0,
-        limit: 10,
-        offset: 0,
-        processingTimeMs: 0,
-        semanticHitCount: 0,
-      }
-    )
   }
 
   // 在指定聊天中搜索消息 (POST方法)

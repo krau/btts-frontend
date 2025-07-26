@@ -81,29 +81,6 @@
         </Card>
       </div>
     </main>
-
-    <!-- 页脚 -->
-    <footer class="border-t bg-card mt-12">
-      <div class="container mx-auto px-4 py-6">
-        <div class="flex items-center justify-between text-sm text-muted-foreground">
-          <p>© 2025 Better Telegram Search</p>
-          <div class="flex items-center space-x-4">
-            <span v-if="indexedChats.length > 0"> 已索引 {{ indexedChats.length }} 个聊天 </span>
-            <a
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="hover:text-foreground transition-colors"
-            >
-              GitHub
-            </a>
-          </div>
-        </div>
-      </div>
-    </footer>
-
-    <!-- Toast 通知 -->
-    <Toaster />
   </div>
 </template>
 
@@ -118,11 +95,10 @@ import SearchForm from '@/components/SearchForm.vue'
 import SearchResults from '@/components/SearchResults.vue'
 import ApiKeyDialog from '@/components/ApiKeyDialog.vue'
 import DarkModeMenu from '@/components/DarkModeMenu.vue'
-import { Toaster } from '@/components/ui/sonner'
 import { useSearchStore } from '@/stores/search'
 
 const searchStore = useSearchStore()
-const { isApiKeyConfigured, indexedChats } = storeToRefs(searchStore)
+const { isApiKeyConfigured } = storeToRefs(searchStore)
 
 // 本地状态
 const isApiDialogOpen = ref(false)

@@ -15,19 +15,18 @@
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <!-- 聊天选择 -->
       <div class="space-y-2">
-        <label class="text-sm font-medium">聊天</label>
-        <Select v-model="selectedChatId" @update:model-value="handleChatChange">
+        <label class="text-sm font-medium">选择聊天</label>
+        <Select
+          v-model="selectedChatIds"
+          multiple
+          @update:model-value="handleSelectedChatIdsChange"
+        >
           <SelectTrigger>
-            <SelectValue placeholder="选择聊天" />
+            <SelectValue :placeholder="selectedChatIdsPlaceholder" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">所有聊天</SelectItem>
-            <SelectItem
-              v-for="chat in indexedChats"
-              :key="chat.chat_id"
-              :value="chat.chat_id.toString()"
-            >
-              {{ chat.title || chat.username || `Chat ${chat.chat_id}` }}
+            <SelectItem v-for="chat in indexedChats" :key="chat.chat_id" :value="chat.chat_id">
+              {{ chat.title }}
             </SelectItem>
           </SelectContent>
         </Select>
@@ -96,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { SearchIcon, LoaderIcon } from 'lucide-vue-next'
 import { Input } from '@/components/ui/input'
@@ -123,11 +122,23 @@ const {
   processingTime,
   semanticHitCount,
   indexedChats,
+  selectedChatIds,
 } = storeToRefs(searchStore)
 
 // 本地状态
 const localQuery = ref(query.value)
-const selectedChatId = ref<string>('all')
+
+// 计算属性
+const selectedChatIdsPlaceholder = computed(() => {
+  if (selectedChatIds.value.length === 0) {
+    return '所有聊天'
+  } else if (selectedChatIds.value.length === 1) {
+    const chat = indexedChats.value.find((c) => c.chat_id === selectedChatIds.value[0])
+    return chat ? chat.title : '1个聊天'
+  } else {
+    return `${selectedChatIds.value.length}个聊天`
+  }
+})
 
 // 监听 query 变化
 watch(query, (newQuery) => {
@@ -140,17 +151,6 @@ function handleSearch() {
 
   searchStore.setQuery(localQuery.value)
   searchStore.search()
-}
-
-// 处理聊天选择变化
-function handleChatChange(value: unknown) {
-  if (value === null || value === undefined) return
-  selectedChatId.value = String(value)
-  if (value === 'all') {
-    searchStore.setSelectedChatIds([])
-  } else {
-    searchStore.setSelectedChatIds([parseInt(String(value))])
-  }
 }
 
 // 处理消息类型变化
@@ -175,4 +175,18 @@ function handlePageSizeChange(value: unknown) {
   if (value === null || value === undefined) return
   searchStore.setPageSize(parseInt(String(value)))
 }
+
+// 处理选中聊天变化
+function handleSelectedChatIdsChange(value: unknown) {
+  searchStore.setSelectedChatIds(value as number[])
+}
+
+// 在组件挂载时加载聊天列表
+onMounted(async () => {
+  try {
+    await searchStore.loadIndexedChats()
+  } catch (error) {
+    console.error('无法加载聊天列表:', error)
+  }
+})
 </script>
