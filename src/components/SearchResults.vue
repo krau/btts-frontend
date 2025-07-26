@@ -162,6 +162,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination'
+import { toast } from 'vue-sonner'
+
 import { useSearchStore } from '@/stores/search'
 import {
   formatTimestamp,
@@ -213,8 +215,10 @@ function highlightedMessage(hit: SearchHit): string {
 async function copyMessage(message: string) {
   try {
     await navigator.clipboard.writeText(message)
+    toast.success('消息已复制到剪贴板')
   } catch (error) {
     console.error('复制失败:', error)
+    toast.error('复制失败，请重试')
   }
 }
 
