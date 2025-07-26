@@ -54,8 +54,8 @@
               </div>
               <div class="flex items-center space-x-2">
                 <Button variant="outline" size="sm" @click="openMessageDialog(hit)">
-                  <ArrowDownIcon class="mr-1 h-3 w-3" />
-                  查看全文
+                  <EyeIcon class="mr-1 h-3 w-3" />
+                  详细
                 </Button>
                 <Button variant="outline" size="sm" @click="copyMessage(hit.message)">
                   <CopyIcon class="mr-1 h-3 w-3" />
@@ -127,58 +127,12 @@
       </Pagination>
     </div>
 
-    <!-- 消息全文对话框 -->
-    <Dialog v-model:open="isMessageDialogOpen">
-      <DialogContent class="sm:max-w-[600px] max-h-[80vh]">
-        <DialogHeader>
-          <DialogTitle class="flex items-center space-x-2">
-            <Badge
-              v-if="selectedMessage"
-              :variant="getMessageTypeVariant(selectedMessage.type)"
-              class="mr-2"
-            >
-              {{ formatMessageType(selectedMessage?.type || '') }}
-            </Badge>
-            <span v-if="selectedMessage?.user_full_name">{{ selectedMessage.user_full_name }}</span>
-          </DialogTitle>
-        </DialogHeader>
-
-        <div class="mt-2 overflow-y-auto" style="max-height: 50vh">
-          <div
-            v-if="selectedMessage?.chat_title"
-            class="mb-4 text-sm text-muted-foreground flex items-center"
-          >
-            <MessageCircleIcon class="h-4 w-4 mr-2" />
-            <a
-              :href="`https://t.me/c/${selectedMessage?.chat_id}/${selectedMessage?.id}`"
-              target="_blank"
-              class="hover:text-primary transition-colors"
-            >
-              {{ selectedMessage.chat_title }}
-            </a>
-          </div>
-
-          <div
-            v-if="selectedMessage"
-            class="message-content text-sm leading-relaxed p-4 bg-muted/50 rounded-md break-words"
-            v-html="highlightedFullMessage"
-          ></div>
-        </div>
-
-        <DialogFooter class="mt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            @click="copyMessage(selectedMessage?.message || '')"
-            class="mr-2"
-          >
-            <CopyIcon class="mr-1 h-4 w-4" />
-            复制全文
-          </Button>
-          <Button @click="closeMessageDialog">关闭</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <MessageDetailDialog
+      v-model:is-open="isMessageDialogOpen"
+      :message="selectedMessage"
+      :search-query="query"
+      @close="closeMessageDialog"
+    />
   </div>
 </template>
 
@@ -191,7 +145,7 @@ import {
   ClockIcon,
   CopyIcon,
   SearchXIcon,
-  ArrowDownIcon,
+  EyeIcon,
 } from 'lucide-vue-next'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -206,14 +160,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
 import { toast } from 'vue-sonner'
+import MessageDetailDialog from '@/components/MessageDetailDialog.vue'
 
 import { useSearchStore } from '@/stores/search'
 import {
@@ -253,11 +201,7 @@ function highlightedMessage(hit: SearchHit): string {
   return highlightSearchTerms(hit._formatted?.message || hit.message, query.value)
 }
 
-// 获取高亮的完整消息内容
-const highlightedFullMessage = computed(() => {
-  if (!selectedMessage.value) return ''
-  return highlightSearchTerms(selectedMessage.value.message, query.value)
-})
+// 高亮消息内容功能已移至 MessageDetailDialog 组件
 
 // 打开消息对话框
 function openMessageDialog(hit: SearchHit) {
