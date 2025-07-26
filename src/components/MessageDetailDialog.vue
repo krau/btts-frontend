@@ -30,6 +30,31 @@
           class="message-content text-sm leading-relaxed p-4 bg-muted/50 rounded-md break-words"
           v-html="highlightedContent"
         ></div>
+
+        <!-- 回复消息 -->
+        <div v-if="message" class="mt-4 border-t pt-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-sm font-medium flex items-center">
+              <ReplyIcon class="h-4 w-4 mr-1.5 text-primary" />
+              回复此消息
+            </div>
+            <Badge v-if="replyStatus" :variant="replyStatus.variant">{{ replyStatus.text }}</Badge>
+          </div>
+          <div class="flex space-x-2">
+            <Input
+              v-model="replyText"
+              placeholder="输入回复内容..."
+              class="flex-1"
+              :disabled="isReplying"
+              @keydown.enter="handleReplySubmit"
+            />
+            <Button @click="handleReplySubmit" :disabled="!replyText.trim() || isReplying">
+              <SendIcon v-if="!isReplying" class="mr-1.5 h-4 w-4" />
+              <LoaderIcon v-else class="mr-1.5 h-4 w-4 animate-spin" />
+              {{ isReplying ? '发送中...' : '发送' }}
+            </Button>
+          </div>
+        </div>
       </div>
 
       <DialogFooter class="mt-4">
@@ -44,10 +69,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { MessageCircleIcon, CopyIcon } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
+import { MessageCircleIcon, CopyIcon, ReplyIcon, SendIcon, LoaderIcon } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Dialog,
   DialogContent,
@@ -56,6 +82,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { toast } from 'vue-sonner'
+import { apiService } from '@/services/api'
 import { formatMessageType, getMessageTypeVariant, highlightSearchTerms } from '@/utils/helpers'
 import type { SearchHit } from '@/types/api'
 
@@ -72,6 +99,13 @@ const emit = defineEmits<{
   close: []
 }>()
 
+// 状态
+const replyText = ref('')
+const isReplying = ref(false)
+const replyStatus = ref<{ text: string; variant: 'default' | 'secondary' | 'destructive' } | null>(
+  null,
+)
+
 // 计算属性：高亮的消息内容
 const highlightedContent = computed(() => {
   if (!props.message) return ''
@@ -81,6 +115,11 @@ const highlightedContent = computed(() => {
 // 处理对话框打开状态变化
 function handleUpdateOpen(value: boolean) {
   emit('update:isOpen', value)
+  if (!value) {
+    // 关闭对话框时重置状态
+    replyText.value = ''
+    replyStatus.value = null
+  }
 }
 
 // 关闭对话框
@@ -99,6 +138,37 @@ async function copyMessage() {
   } catch (error) {
     console.error('复制失败:', error)
     toast.error('复制失败，请重试')
+  }
+}
+
+// 提交回复
+async function handleReplySubmit() {
+  if (!props.message || !replyText.value.trim() || isReplying.value) return
+
+  isReplying.value = true
+  replyStatus.value = null
+
+  try {
+    const response = await apiService.replyMessage({
+      chat_id: props.message.chat_id,
+      message_id: props.message.id,
+      text: replyText.value.trim(),
+    })
+
+    if (response.status === 'success') {
+      replyStatus.value = { text: '回复成功', variant: 'default' }
+      replyText.value = ''
+      toast.success('回复已发送')
+    } else {
+      replyStatus.value = { text: '回复失败', variant: 'destructive' }
+      toast.error(`回复失败: ${response.message}`)
+    }
+  } catch (error) {
+    console.error('回复失败:', error)
+    replyStatus.value = { text: '回复失败', variant: 'destructive' }
+    toast.error('回复发送失败，请稍后重试')
+  } finally {
+    isReplying.value = false
   }
 }
 </script>

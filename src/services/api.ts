@@ -111,9 +111,7 @@ class ApiService {
 
   async replyMessage(request: ReplyMessageRequest): Promise<ReplyMessageResponse> {
     const api = this.createKyInstance()
-    const response = await api
-      .post('client/reply', { json: request })
-      .json<ReplyMessageResponse>()
+    const response = await api.post('client/reply', { json: request }).json<ReplyMessageResponse>()
     return response
   }
 }
