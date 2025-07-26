@@ -48,7 +48,7 @@
               />
 
               <!-- 如果消息太长，显示完整消息的切换按钮 -->
-              <div v-if="hit.message.length > 300" class="text-right">
+              <div class="text-right">
                 <Button variant="ghost" size="sm" @click="toggleExpanded(hit.id)">
                   {{ expandedMessages.has(hit.id) ? '收起' : '展开全文' }}
                 </Button>
