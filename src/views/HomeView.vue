@@ -1,5 +1,158 @@
-<script setup lang="ts"></script>
-
 <template>
-  <main></main>
+  <div class="min-h-screen bg-background">
+    <!-- 顶部导航栏 -->
+    <header class="border-b bg-card">
+      <div class="container mx-auto px-4 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <h1 class="text-2xl font-bold">Better Telegram Search</h1>
+            <Badge variant="secondary" class="hidden sm:inline-flex"> v1.0 </Badge>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <!-- API Key 配置 -->
+            <ApiKeyDialog v-model:open="isApiDialogOpen" @saved="handleApiKeySaved" />
+
+            <!-- 主题切换 -->
+            <DarkModeMenu />
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主要内容区域 -->
+    <main class="container mx-auto px-4 py-6">
+      <!-- API Key 未配置提示 -->
+      <div v-if="!isApiKeyConfigured" class="mb-6">
+        <Card class="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30">
+          <CardContent class="p-6">
+            <div class="flex items-center space-x-3">
+              <AlertTriangleIcon class="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              <div>
+                <h3 class="font-medium text-amber-800 dark:text-amber-200">需要配置 API Key</h3>
+                <p class="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                  请先配置你的 BTTS API Key 以开始使用搜索功能。
+                </p>
+              </div>
+              <Button variant="outline" size="sm" class="ml-auto" @click="isApiDialogOpen = true">
+                立即配置
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <!-- 搜索表单 -->
+      <div class="mb-6">
+        <Card>
+          <CardHeader>
+            <CardTitle class="flex items-center space-x-2">
+              <SearchIcon class="h-5 w-5" />
+              <span>搜索消息</span>
+            </CardTitle>
+            <CardDescription> 在 Telegram 消息中搜索内容，支持多种过滤条件 </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SearchForm />
+          </CardContent>
+        </Card>
+      </div>
+
+      <!-- 搜索结果 -->
+      <SearchResults />
+
+      <!-- 错误提示 -->
+      <div v-if="error" class="mt-6">
+        <Card class="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30">
+          <CardContent class="p-4">
+            <div class="flex items-center space-x-3">
+              <XCircleIcon class="h-5 w-5 text-red-600 dark:text-red-400" />
+              <div>
+                <h3 class="font-medium text-red-800 dark:text-red-200">操作失败</h3>
+                <p class="text-sm text-red-700 dark:text-red-300 mt-1">
+                  {{ error }}
+                </p>
+              </div>
+              <Button variant="ghost" size="sm" @click="error = ''">
+                <XIcon class="h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="border-t bg-card mt-12">
+      <div class="container mx-auto px-4 py-6">
+        <div class="flex items-center justify-between text-sm text-muted-foreground">
+          <p>© 2025 Better Telegram Search</p>
+          <div class="flex items-center space-x-4">
+            <span v-if="indexedChats.length > 0"> 已索引 {{ indexedChats.length }} 个聊天 </span>
+            <a
+              href="https://github.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-foreground transition-colors"
+            >
+              GitHub
+            </a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Toast 通知 -->
+    <Toaster />
+  </div>
 </template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { SearchIcon, AlertTriangleIcon, XCircleIcon, XIcon } from 'lucide-vue-next'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import SearchForm from '@/components/SearchForm.vue'
+import SearchResults from '@/components/SearchResults.vue'
+import ApiKeyDialog from '@/components/ApiKeyDialog.vue'
+import DarkModeMenu from '@/components/DarkModeMenu.vue'
+import { Toaster } from '@/components/ui/sonner'
+import { useSearchStore } from '@/stores/search'
+
+const searchStore = useSearchStore()
+const { isApiKeyConfigured, indexedChats } = storeToRefs(searchStore)
+
+// 本地状态
+const isApiDialogOpen = ref(false)
+const error = ref('')
+
+// 页面加载时初始化
+onMounted(async () => {
+  if (isApiKeyConfigured.value) {
+    try {
+      await searchStore.loadIndexedChats()
+    } catch (err) {
+      error.value = '加载聊天列表失败，请检查网络连接和 API Key'
+      console.error('Failed to load chats:', err)
+    }
+  }
+})
+
+// 处理 API Key 保存
+async function handleApiKeySaved() {
+  error.value = ''
+  try {
+    await searchStore.loadIndexedChats()
+    // 显示成功通知
+    const { toast } = await import('vue-sonner')
+    toast.success('API Key 配置成功')
+  } catch (err) {
+    error.value = '加载聊天列表失败，请检查网络连接和 API Key'
+    console.error('Failed to load chats after API key saved:', err)
+    const { toast } = await import('vue-sonner')
+    toast.error('加载聊天列表失败')
+  }
+}
+</script>
