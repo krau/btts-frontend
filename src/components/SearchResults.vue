@@ -1,14 +1,17 @@
 <template>
   <div class="space-y-4" ref="searchResultsContainer">
     <!-- 搜索结果列表 -->
-    <div v-if="searchResults.length > 0" class="space-y-3">
+    <div
+      v-if="searchResults.length > 0"
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+    >
       <Card
         v-for="hit in searchResults"
         :key="`${hit.chat_id}-${hit.id}`"
-        class="transition-all duration-200"
+        class="transition-all duration-200 h-full flex flex-col"
       >
-        <CardContent class="p-4">
-          <div class="space-y-3">
+        <CardContent class="p-4 flex-1 flex flex-col">
+          <div class="space-y-3 flex-1 flex flex-col">
             <!-- 用户和聊天信息 -->
             <div class="flex items-center justify-between text-sm">
               <div class="flex items-center space-x-2">
@@ -36,9 +39,9 @@
             </div>
 
             <!-- 消息内容 -->
-            <div class="space-y-2">
+            <div class="space-y-2 flex-1 flex flex-col">
               <div
-                class="message-content text-sm leading-relaxed p-3 bg-muted/50 rounded-md break-words"
+                class="message-content text-sm leading-relaxed p-3 bg-muted/50 rounded-md break-words flex-1"
                 v-html="highlightedMessage(hit)"
               />
             </div>
@@ -76,8 +79,8 @@
     </div>
 
     <!-- 加载状态 -->
-    <div v-if="isLoading" class="space-y-3">
-      <Card v-for="i in 5" :key="i" class="animate-pulse">
+    <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <Card v-for="i in 6" :key="i" class="animate-pulse h-full">
         <CardContent class="p-4">
           <div class="space-y-3">
             <div class="flex items-center justify-between">
