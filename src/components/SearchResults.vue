@@ -26,16 +26,15 @@
                   {{ hit.user_full_name }}
                 </span>
               </div>
-              <a
+              <div
                 class="flex items-center space-x-2 text-muted-foreground hover:text-primary"
-                :href="`https://t.me/c/${hit.chat_id}/${hit.id}`"
-                target="_blank"
+                @click="copyMessage(hit.chat_id.toString())"
               >
                 <MessageCircleIcon class="h-4 w-4 text-muted-foreground" />
                 <span>
                   {{ hit.chat_title || `Chat ${hit.chat_id}` }}
                 </span>
-              </a>
+              </div>
             </div>
 
             <!-- 消息内容 -->
@@ -57,9 +56,13 @@
                   <EyeIcon class="mr-1 h-3 w-3" />
                   详细
                 </Button>
-                <Button variant="outline" size="sm" @click="copyMessage(hit.message)">
-                  <CopyIcon class="mr-1 h-3 w-3" />
-                  复制
+                <Button
+                  variant="outline"
+                  size="sm"
+                  @click="openLink(`https://t.me/c/${hit.chat_id}/${hit.id}`)"
+                >
+                  <LinkIcon class="mr-1 h-3 w-3" />
+                  跳转
                 </Button>
               </div>
             </div>
@@ -143,9 +146,9 @@ import {
   UserIcon,
   MessageCircleIcon,
   ClockIcon,
-  CopyIcon,
   SearchXIcon,
   EyeIcon,
+  LinkIcon,
 } from 'lucide-vue-next'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -169,6 +172,7 @@ import {
   formatMessageType,
   getMessageTypeVariant,
   highlightSearchTerms,
+  openLink,
 } from '@/utils/helpers'
 import type { SearchHit } from '@/types/api'
 

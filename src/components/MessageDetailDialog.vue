@@ -32,7 +32,7 @@
         ></div>
 
         <!-- 回复消息 -->
-        <div v-if="message" class="mt-4 border-t pt-4">
+        <div v-if="message" class="m-2">
           <div class="flex items-center justify-between mb-2">
             <div class="text-sm font-medium flex items-center">
               <ReplyIcon class="h-4 w-4 mr-1.5 text-primary" />

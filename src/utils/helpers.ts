@@ -114,3 +114,7 @@ export function validateApiKey(key: string): boolean {
 export function uniqueArray<T>(array: T[]): T[] {
   return Array.from(new Set(array))
 }
+
+export const openLink = (url: string) => {
+  window.open(url, '_blank', 'noopener,noreferrer')
+}
