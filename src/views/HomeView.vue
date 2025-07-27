@@ -6,7 +6,7 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-4">
             <h1 class="text-2xl font-bold p-2">BTTS</h1>
-            <subtitle class="text-sm text-muted-foreground">Telegram 消息搜索</subtitle>
+            <a class="text-sm text-muted-foreground" href="https://github.com/krau/btts">Telegram 消息搜索</a>
           </div>
 
           <div class="flex items-center space-x-2">

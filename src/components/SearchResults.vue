@@ -28,7 +28,7 @@
               </div>
               <div
                 class="flex items-center space-x-2 text-muted-foreground hover:text-primary cursor-pointer"
-                @click="copyMessage(hit.chat_id.toString())"
+                @click="copyMessage(`https://t.me/c/${hit.chat_id}/${hit.id}`, '消息链接已复制')"
               >
                 <MessageCircleIcon class="h-4 w-4 text-muted-foreground" />
                 <span>

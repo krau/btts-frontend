@@ -121,10 +121,10 @@ export const openLink = (url: string) => {
   window.open(url, '_blank', 'noopener,noreferrer')
 }
 
-export async function copyMessage(message: string) {
+export async function copyMessage(message: string, tip: string = '已复制到剪贴板') {
   try {
     await navigator.clipboard.writeText(message)
-    toast.success('已复制到剪贴板')
+    toast.success(tip)
   } catch (error) {
     console.error('复制失败:', error)
     toast.error('复制失败，请重试')
