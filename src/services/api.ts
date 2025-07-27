@@ -8,6 +8,7 @@ import type {
   ReplyMessageRequest,
   MessageResponse,
 } from '@/types/api'
+import { buildReqToken } from '@/utils/helpers'
 
 class ApiService {
   private baseURL: string
@@ -134,15 +135,19 @@ class ApiService {
     return response
   }
 
-  // async streamFile(chatId: number, messageId: number): Promise<ReadableStream<Uint8Array>> {
-  //   // 返回文件流
-  //   const api = this.createKyInstance()
-  //   const response = await api
-  //     .get('client/filestream', {
-  //       searchParams: { chat_id: chatId, message_id: messageId },
-  //     })
-  //   return response.body as ReadableStream<Uint8Array>
-  // }
+  async streamFile(chatId: number, messageId: number): Promise<ReadableStream<Uint8Array>> {
+    // 返回文件流
+    const api = this.createKyInstance()
+    const response = await api.get('client/filestream', {
+      searchParams: { chat_id: chatId, message_id: messageId },
+    })
+    return response.body as ReadableStream<Uint8Array>
+  }
+
+  async buildReqToken(...params: string[]): Promise<string> {
+    const token = await buildReqToken(this.apiKey, ...params)
+    return token || ''
+  }
 }
 
 export const apiService = new ApiService()

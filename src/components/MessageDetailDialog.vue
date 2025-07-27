@@ -73,11 +73,7 @@
               :disabled="message.type === 'text'"
               variant="outline"
               title="查看文件"
-              @click="
-                openLink(
-                  `/api/client/filestream?chat_id=${message.chat_id}&message_id=${message.id}`,
-                )
-              "
+              @click="openFileLink"
             >
               <FileIcon />
             </Button>
@@ -219,6 +215,21 @@ const repeatMessage = async (message: SearchHit) => {
     toast.error('复读发送失败，请稍后重试')
   } finally {
     isReplying.value = false
+  }
+}
+
+const getFileUrl = async (message: SearchHit) => {
+  const token = await apiService.buildReqToken(message.chat_id.toString(), message.id.toString())
+  return `/api/client/filestream?chat_id=${message.chat_id}&message_id=${message.id}&reqtoken=${token}`
+}
+
+const openFileLink = async () => {
+  if (!props.message || props.message.type === 'text') return
+  const fileUrl = await getFileUrl(props.message)
+  if (fileUrl) {
+    openLink(fileUrl)
+  } else {
+    toast.error('无法获取文件链接')
   }
 }
 </script>

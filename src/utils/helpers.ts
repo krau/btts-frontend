@@ -130,3 +130,17 @@ export async function copyMessage(message: string, tip: string = '已复制到�
     toast.error('复制失败，请重试')
   }
 }
+
+export async function buildReqToken(key: string | null, ...params: string[]): Promise<string> {
+  if (!key || params.length < 2) return ''
+
+  const str = `${key}:${params.join(':')}`
+  const encoder = new TextEncoder()
+  const data = encoder.encode(str)
+
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
+
+  return hashHex
+}
