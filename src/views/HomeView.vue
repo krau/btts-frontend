@@ -5,8 +5,8 @@
       <div class="container mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-4">
-            <h1 class="text-2xl font-bold">Better Telegram Search</h1>
-            <Badge variant="secondary" class="hidden sm:inline-flex"> v1.0 </Badge>
+            <h1 class="text-2xl font-bold p-2">BTTS</h1>
+            <subtitle class="text-sm text-muted-foreground">Telegram 消息搜索</subtitle>
           </div>
 
           <div class="flex items-center space-x-2">
@@ -85,11 +85,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { SearchIcon, AlertTriangleIcon, XCircleIcon, XIcon } from 'lucide-vue-next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import SearchForm from '@/components/SearchForm.vue'
 import SearchResults from '@/components/SearchResults.vue'
@@ -103,18 +102,6 @@ const { isApiKeyConfigured } = storeToRefs(searchStore)
 // 本地状态
 const isApiDialogOpen = ref(false)
 const error = ref('')
-
-// 页面加载时初始化
-onMounted(async () => {
-  if (isApiKeyConfigured.value) {
-    try {
-      await searchStore.loadIndexedChats()
-    } catch (err) {
-      error.value = '加载聊天列表失败，请检查网络连接和 API Key'
-      console.error('Failed to load chats:', err)
-    }
-  }
-})
 
 // 处理 API Key 保存
 async function handleApiKeySaved() {

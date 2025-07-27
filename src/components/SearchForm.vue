@@ -1,44 +1,53 @@
 <template>
   <div class="space-y-4">
     <!-- 搜索输入框 -->
-    <div class="relative flex items-center space-x-4">
-      <SearchIcon class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-      <Input
-        v-model="localQuery"
-        placeholder="搜索消息内容..."
-        class="pl-9 pr-4 transition-shadow focus-within:shadow-md"
-        @keydown.enter="handleSearch"
-      />
-      <Button
-        @click="handleSearch"
-        :disabled="!localQuery.trim() || isLoading"
-        class="shadow hover:shadow-md transition-shadow"
-      >
-        <SearchIcon v-if="!isLoading" />
-        <LoaderIcon v-else class="animate-spin" />
-        搜索
-      </Button>
-      <Select :model-value="pageSize.toString()" @update:model-value="handlePageSizeChange">
-        <SelectTrigger class="h-10 shadow hover:shadow-md transition-shadow">
-          <div class="flex items-center justify-between w-full">
-            <span>每页 {{ pageSize }} 条</span>
-          </div>
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="12">
-            <span>12 条</span>
-          </SelectItem>
-          <SelectItem value="24">
-            <span>24 条</span>
-          </SelectItem>
-          <SelectItem value="48">
-            <span>48 条</span>
-          </SelectItem>
-          <SelectItem value="90">
-            <span>90 条</span>
-          </SelectItem>
-        </SelectContent>
-      </Select>
+    <div class="flex flex-col sm:flex-row gap-3 sm:gap-2">
+      <!-- 搜索输入框 - 移动端独占一行 -->
+      <div class="relative flex-1">
+        <SearchIcon
+          class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+        />
+        <Input
+          v-model="localQuery"
+          placeholder="搜索消息内容..."
+          class="pl-9 pr-4 transition-shadow focus-within:shadow-md"
+          @keydown.enter="handleSearch"
+        />
+      </div>
+
+      <!-- 控制按钮 - 移动端第二行，桌面端右侧 -->
+      <div class="flex items-center gap-2 sm:flex-shrink-0">
+        <Button
+          @click="handleSearch"
+          :disabled="!localQuery.trim() || isLoading"
+          class="flex-1 sm:flex-none shadow hover:shadow-md transition-shadow"
+        >
+          <SearchIcon v-if="!isLoading" />
+          <LoaderIcon v-else class="animate-spin" />
+          搜索
+        </Button>
+        <Select :model-value="pageSize.toString()" @update:model-value="handlePageSizeChange">
+          <SelectTrigger class="h-10 w-auto min-w-[120px] shadow hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between w-full">
+              <span>每页 {{ pageSize }} 条</span>
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="12">
+              <span>12 条</span>
+            </SelectItem>
+            <SelectItem value="24">
+              <span>24 条</span>
+            </SelectItem>
+            <SelectItem value="48">
+              <span>48 条</span>
+            </SelectItem>
+            <SelectItem value="90">
+              <span>90 条</span>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
