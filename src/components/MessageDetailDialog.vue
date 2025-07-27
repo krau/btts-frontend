@@ -3,7 +3,7 @@
     <DialogContent class="sm:max-w-[600px] max-h-[80vh]">
       <DialogHeader>
         <DialogTitle class="flex items-center space-x-2">
-          <Badge v-if="message" :variant="getMessageTypeVariant(message.type)" class="mr-2">
+          <Badge v-if="message" :variant="getMessageTypeVariant(message.type)">
             {{ formatMessageType(message?.type || '') }}
           </Badge>
           <span v-if="message?.user_full_name">{{ message.user_full_name }}</span>
@@ -35,7 +35,7 @@
         <div v-if="message" class="m-2">
           <div class="flex items-center justify-between mb-2">
             <div class="text-sm font-medium flex items-center">
-              <ReplyIcon class="h-4 w-4 mr-1.5 text-primary" />
+              <ReplyIcon class="h-4 w-4 text-primary" />
               对此消息进行操作
             </div>
             <Badge v-if="requestStatus" :variant="requestStatus.variant">{{
@@ -53,7 +53,7 @@
             <DropdownMenu>
               <DropdownMenuTrigger as-child>
                 <Button variant="outline" title="快捷功能">
-                  <ZapIcon class="mr-1 h-3 w-3" />
+                  <ZapIcon />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -66,13 +66,19 @@
                   <DropdownMenuItem @click="repeatMessage(message)" :disabled="isReplying">
                     <span>复读</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem :disabled="message.type === 'text'">
-                    <a :href="`/api/client/filestream?chat_id=${message.chat_id}&message_id=${message.id}`" target="_blank">预览文件</a>
-                  </DropdownMenuItem>
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button :disabled="isReplying" variant="outline" title="添加媒体">
+            <Button
+              :disabled="message.type === 'text'"
+              variant="outline"
+              title="查看文件"
+              @click="
+                openLink(
+                  `/api/client/filestream?chat_id=${message.chat_id}&message_id=${message.id}`,
+                )
+              "
+            >
               <FileIcon />
             </Button>
             <Button
@@ -115,7 +121,12 @@ import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from 'vue-sonner'
 import { apiService } from '@/services/api'
-import { formatMessageType, getMessageTypeVariant, highlightSearchTerms } from '@/utils/helpers'
+import {
+  formatMessageType,
+  getMessageTypeVariant,
+  highlightSearchTerms,
+  openLink,
+} from '@/utils/helpers'
 import type { SearchHit } from '@/types/api'
 import { copyMessage } from '@/utils/helpers'
 

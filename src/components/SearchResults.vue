@@ -59,10 +59,10 @@
                   variant="outline"
                   title="跳转至消息"
                 >
-                  <LinkIcon class="mr-1 h-3 w-3" />
+                  <LinkIcon class="h-3 w-3" />
                 </Button>
                 <Button variant="outline" @click="openMessageDialog(hit)" title="查看详情">
-                  <EyeIcon class="mr-1 h-3 w-3" />
+                  <EyeIcon class="h-3 w-3" />
                 </Button>
               </div>
             </div>

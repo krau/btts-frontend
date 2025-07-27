@@ -188,7 +188,7 @@
   <!-- 搜索统计 -->
   <div v-if="totalHits > 0" class="flex items-center justify-between p-3 bg-muted/30 text-sm mt-4">
     <div class="flex items-center">
-      <SearchIcon class="h-4 w-4 mr-2 text-primary" />
+      <InfoIcon class="h-4 w-4 mr-2 text-primary" />
       <span>
         找到 <strong class="text-foreground">{{ totalHits.toLocaleString() }}</strong> 条结果
         <span v-if="semanticHitCount > 0" class="ml-1">
@@ -218,6 +218,7 @@ import {
   BookIcon,
   LayersIcon,
   RefreshCwIcon,
+  InfoIcon,
 } from 'lucide-vue-next'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
