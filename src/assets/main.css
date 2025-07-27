@@ -128,10 +128,10 @@ mark {
   background: linear-gradient(
     to top,
     rgba(69, 223, 189, 0.747) 0%,
-    rgba(69, 223, 189, 0.747) 50%,
-    transparent 50%
+    rgba(69, 223, 189, 0.747) 10%,
+    transparent 80%
   );
-  padding: 0 0.25rem;
+  padding: 0;
   border-radius: 0.25rem;
   color: inherit;
   box-decoration-break: clone;
@@ -141,8 +141,8 @@ mark {
   background: linear-gradient(
     to top,
     rgba(18, 235, 144, 0.5) 0%,
-    rgba(18, 235, 144, 0.5) 50%,
-    transparent 50%
+    rgba(18, 235, 144, 0.5) 10%,
+    transparent 80%
   );
 }
 

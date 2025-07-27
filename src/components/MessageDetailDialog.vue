@@ -31,12 +31,12 @@
           v-html="highlightedContent"
         ></div>
 
-        <!-- 回复消息 -->
+        <!-- 输入框 -->
         <div v-if="message" class="m-2">
           <div class="flex items-center justify-between mb-2">
             <div class="text-sm font-medium flex items-center">
               <ReplyIcon class="h-4 w-4 mr-1.5 text-primary" />
-              回复此消息
+              对此消息进行操作
             </div>
             <Badge v-if="replyStatus" :variant="replyStatus.variant">{{ replyStatus.text }}</Badge>
           </div>
@@ -48,43 +48,67 @@
               :disabled="isReplying"
               @keydown.enter="handleReplySubmit"
             />
-            <Button @click="handleReplySubmit" :disabled="!replyText.trim() || isReplying">
-              <SendIcon v-if="!isReplying" class="mr-1.5 h-4 w-4" />
-              <LoaderIcon v-else class="mr-1.5 h-4 w-4 animate-spin" />
-              {{ isReplying ? '发送中...' : '发送' }}
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button variant="outline" title="快捷功能">
+                  <ZapIcon class="mr-1 h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel class="font-semibold">快捷功能</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem @click="copyMessage(message.message)">
+                    <span>复制全文</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <span>复读</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button :disabled="isReplying" variant="outline" title="添加媒体">
+              <FileIcon />
+            </Button>
+            <Button @click="handleReplySubmit" :disabled="!replyText.trim() || isReplying" title="发送">
+              <SendIcon v-if="!isReplying" class="mr-1.5" />
+              <LoaderIcon v-else class="mr-1.5 animate-spin" />
             </Button>
           </div>
         </div>
       </div>
-
-      <DialogFooter class="mt-4">
-        <Button variant="outline" @click="copyMessage" class="mr-2">
-          <CopyIcon class="mr-1 h-4 w-4" />
-          复制全文
-        </Button>
-        <Button @click="close">关闭</Button>
-      </DialogFooter>
     </DialogContent>
   </Dialog>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { MessageCircleIcon, CopyIcon, ReplyIcon, SendIcon, LoaderIcon } from 'lucide-vue-next'
+import {
+  MessageCircleIcon,
+  ReplyIcon,
+  SendIcon,
+  LoaderIcon,
+  FileIcon,
+  ZapIcon,
+} from 'lucide-vue-next'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from 'vue-sonner'
 import { apiService } from '@/services/api'
 import { formatMessageType, getMessageTypeVariant, highlightSearchTerms } from '@/utils/helpers'
 import type { SearchHit } from '@/types/api'
+import { copyMessage } from '@/utils/helpers'
 
 // 组件属性定义
 const props = defineProps<{
@@ -119,25 +143,6 @@ function handleUpdateOpen(value: boolean) {
     // 关闭对话框时重置状态
     replyText.value = ''
     replyStatus.value = null
-  }
-}
-
-// 关闭对话框
-function close() {
-  emit('update:isOpen', false)
-  emit('close')
-}
-
-// 复制消息内容
-async function copyMessage() {
-  if (!props.message) return
-
-  try {
-    await navigator.clipboard.writeText(props.message.message)
-    toast.success('已复制到剪贴板')
-  } catch (error) {
-    console.error('复制失败:', error)
-    toast.error('复制失败，请重试')
   }
 }
 

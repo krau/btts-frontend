@@ -10,7 +10,7 @@
         :key="`${hit.chat_id}-${hit.id}`"
         class="transition-all duration-200 h-full flex flex-col"
       >
-        <CardContent class="p-4 flex-1 flex flex-col">
+        <CardContent class="flex-1 flex flex-col">
           <div class="space-y-3 flex-1 flex flex-col">
             <!-- 用户和聊天信息 -->
             <div class="flex items-center justify-between text-sm">
@@ -20,19 +20,19 @@
                 </Badge>
                 <UserIcon class="h-4 w-4 text-muted-foreground" />
                 <span
-                  class="font-medium cursor-pointer"
+                  class="font-medium cursor-pointer text-muted-foreground hover:text-primary"
                   @click="copyMessage(hit.user_id.toString())"
                 >
                   {{ hit.user_full_name }}
                 </span>
               </div>
               <div
-                class="flex items-center space-x-2 text-muted-foreground hover:text-primary"
+                class="flex items-center space-x-2 text-muted-foreground hover:text-primary cursor-pointer"
                 @click="copyMessage(hit.chat_id.toString())"
               >
                 <MessageCircleIcon class="h-4 w-4 text-muted-foreground" />
                 <span>
-                  {{ hit.chat_title || `Chat ${hit.chat_id}` }}
+                  {{ hit.chat_title || `${hit.chat_id}` }}
                 </span>
               </div>
             </div>
@@ -40,7 +40,7 @@
             <!-- 消息内容 -->
             <div class="space-y-2 flex-1 flex flex-col">
               <div
-                class="message-content text-sm leading-relaxed p-3 bg-muted/50 rounded-md break-words flex-1"
+                class="message-content leading-relaxed p-3 bg-muted/50 rounded-md break-words flex-1"
                 v-html="highlightedMessage(hit)"
               />
             </div>
@@ -52,17 +52,17 @@
                 <span>{{ formatTimestamp(hit.timestamp) }}</span>
               </div>
               <div class="flex items-center space-x-2">
-                <Button variant="outline" size="sm" @click="openMessageDialog(hit)">
-                  <EyeIcon class="mr-1 h-3 w-3" />
-                  详细
-                </Button>
                 <Button
+                  :as="'a'"
+                  :href="`https://t.me/c/${hit.chat_id}/${hit.id}`"
+                  target="_blank"
                   variant="outline"
-                  size="sm"
-                  @click="openLink(`https://t.me/c/${hit.chat_id}/${hit.id}`)"
+                  title="跳转至消息"
                 >
                   <LinkIcon class="mr-1 h-3 w-3" />
-                  跳转
+                </Button>
+                <Button variant="outline" @click="openMessageDialog(hit)" title="查看详情">
+                  <EyeIcon class="mr-1 h-3 w-3" />
                 </Button>
               </div>
             </div>
@@ -163,7 +163,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination'
-import { toast } from 'vue-sonner'
+
 import MessageDetailDialog from '@/components/MessageDetailDialog.vue'
 
 import { useSearchStore } from '@/stores/search'
@@ -172,7 +172,7 @@ import {
   formatMessageType,
   getMessageTypeVariant,
   highlightSearchTerms,
-  openLink,
+  copyMessage,
 } from '@/utils/helpers'
 import type { SearchHit } from '@/types/api'
 
@@ -205,8 +205,6 @@ function highlightedMessage(hit: SearchHit): string {
   return highlightSearchTerms(hit._formatted?.message || hit.message, query.value)
 }
 
-// 高亮消息内容功能已移至 MessageDetailDialog 组件
-
 // 打开消息对话框
 function openMessageDialog(hit: SearchHit) {
   selectedMessage.value = hit
@@ -218,31 +216,13 @@ function closeMessageDialog() {
   isMessageDialogOpen.value = false
 }
 
-// 复制消息内容
-async function copyMessage(message: string) {
-  try {
-    await navigator.clipboard.writeText(message)
-    toast.success('已复制到剪贴板')
-  } catch (error) {
-    console.error('复制失败:', error)
-    toast.error('复制失败，请重试')
-  }
-}
-
 // 处理页面变化
 function handlePageChange(page: number) {
-  goToPage(page)
+  searchStore.goToPage(page)
 }
 
-// 跳转到指定页面
 function goToPage(page: number) {
+  if (page < 1 || page > totalPages.value) return
   searchStore.goToPage(page)
-  // 翻页后滚动到搜索结果容器顶部，提升用户体验
-  if (searchResultsContainer.value) {
-    searchResultsContainer.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  } else {
-    // 如果容器引用不可用，回退到滚动到页面顶部
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
 }
 </script>
