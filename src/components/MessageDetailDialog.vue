@@ -66,6 +66,9 @@
                   <DropdownMenuItem @click="repeatMessage(message)" :disabled="isReplying">
                     <span>复读</span>
                   </DropdownMenuItem>
+                  <DropdownMenuItem :disabled="message.type === 'text'">
+                    <a :href="`/api/client/filestream?chat_id=${message.chat_id}&message_id=${message.id}`" target="_blank">预览文件</a>
+                  </DropdownMenuItem>
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>

@@ -133,6 +133,16 @@ class ApiService {
       .json<MessageResponse>()
     return response
   }
+
+  // async streamFile(chatId: number, messageId: number): Promise<ReadableStream<Uint8Array>> {
+  //   // 返回文件流
+  //   const api = this.createKyInstance()
+  //   const response = await api
+  //     .get('client/filestream', {
+  //       searchParams: { chat_id: chatId, message_id: messageId },
+  //     })
+  //   return response.body as ReadableStream<Uint8Array>
+  // }
 }
 
 export const apiService = new ApiService()
