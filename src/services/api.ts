@@ -6,7 +6,7 @@ import type {
   IndexChat,
   ApiResponse,
   ReplyMessageRequest,
-  ReplyMessageResponse,
+  MessageResponse,
 } from '@/types/api'
 
 class ApiService {
@@ -118,9 +118,19 @@ class ApiService {
     )
   }
 
-  async replyMessage(request: ReplyMessageRequest): Promise<ReplyMessageResponse> {
+  async replyMessage(request: ReplyMessageRequest): Promise<MessageResponse> {
     const api = this.createKyInstance()
-    const response = await api.post('client/reply', { json: request }).json<ReplyMessageResponse>()
+    const response = await api.post('client/reply', { json: request }).json<MessageResponse>()
+    return response
+  }
+
+  async repeatMessage(chatId: number, messageId: number): Promise<MessageResponse> {
+    const api = this.createKyInstance()
+    const response = await api
+      .post('client/forward', {
+        json: { from_chat_id: chatId, to_chat_id: chatId, message_ids: [messageId] },
+      })
+      .json<MessageResponse>()
     return response
   }
 }

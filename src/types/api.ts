@@ -61,10 +61,16 @@ export interface ReplyMessageRequest {
   text: string
 }
 
-export interface ReplyMessageResponse {
+export interface MessageResponse {
   status: string
   message: string
   // data: any // [TODO]
+}
+
+export interface ForwardMessagesRequest {
+  from_chat_id: number
+  to_chat_id: number
+  message_ids: number[]
 }
 
 export interface ApiResponse<T> {

@@ -14,9 +14,9 @@
         :disabled="!localQuery.trim() || isLoading"
         class="shadow hover:shadow-md transition-shadow"
       >
-        <SearchIcon v-if="!isLoading" class="mr-2 h-4 w-4" />
-        <LoaderIcon v-else class="mr-2 h-4 w-4 animate-spin" />
-        {{ isLoading ? '搜索中...' : '搜索' }}
+        <SearchIcon v-if="!isLoading" />
+        <LoaderIcon v-else class="animate-spin" />
+        搜索
       </Button>
       <Select :model-value="pageSize.toString()" @update:model-value="handlePageSizeChange">
         <SelectTrigger class="h-10 shadow hover:shadow-md transition-shadow">

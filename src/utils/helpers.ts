@@ -1,6 +1,5 @@
 import { toast } from 'vue-sonner'
 
-
 // 格式化时间戳
 export function formatTimestamp(timestamp: number): string {
   const date = new Date(timestamp * 1000)

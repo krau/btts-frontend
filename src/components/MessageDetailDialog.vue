@@ -38,7 +38,9 @@
               <ReplyIcon class="h-4 w-4 mr-1.5 text-primary" />
               对此消息进行操作
             </div>
-            <Badge v-if="replyStatus" :variant="replyStatus.variant">{{ replyStatus.text }}</Badge>
+            <Badge v-if="requestStatus" :variant="requestStatus.variant">{{
+              requestStatus.text
+            }}</Badge>
           </div>
           <div class="flex space-x-2">
             <Input
@@ -61,7 +63,7 @@
                   <DropdownMenuItem @click="copyMessage(message.message)">
                     <span>复制全文</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem @click="repeatMessage(message)" :disabled="isReplying">
                     <span>复读</span>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
@@ -70,9 +72,13 @@
             <Button :disabled="isReplying" variant="outline" title="添加媒体">
               <FileIcon />
             </Button>
-            <Button @click="handleReplySubmit" :disabled="!replyText.trim() || isReplying" title="发送">
-              <SendIcon v-if="!isReplying" class="mr-1.5" />
-              <LoaderIcon v-else class="mr-1.5 animate-spin" />
+            <Button
+              @click="handleReplySubmit"
+              :disabled="!replyText.trim() || isReplying"
+              title="发送"
+            >
+              <SendIcon v-if="!isReplying" />
+              <LoaderIcon v-else class="animate-spin" />
             </Button>
           </div>
         </div>
@@ -126,9 +132,10 @@ const emit = defineEmits<{
 // 状态
 const replyText = ref('')
 const isReplying = ref(false)
-const replyStatus = ref<{ text: string; variant: 'default' | 'secondary' | 'destructive' } | null>(
-  null,
-)
+const requestStatus = ref<{
+  text: string
+  variant: 'default' | 'secondary' | 'destructive'
+} | null>(null)
 
 // 计算属性：高亮的消息内容
 const highlightedContent = computed(() => {
@@ -142,7 +149,7 @@ function handleUpdateOpen(value: boolean) {
   if (!value) {
     // 关闭对话框时重置状态
     replyText.value = ''
-    replyStatus.value = null
+    requestStatus.value = null
   }
 }
 
@@ -151,7 +158,7 @@ async function handleReplySubmit() {
   if (!props.message || !replyText.value.trim() || isReplying.value) return
 
   isReplying.value = true
-  replyStatus.value = null
+  requestStatus.value = null
 
   try {
     const response = await apiService.replyMessage({
@@ -161,17 +168,41 @@ async function handleReplySubmit() {
     })
 
     if (response.status === 'success') {
-      replyStatus.value = { text: '回复成功', variant: 'default' }
+      requestStatus.value = { text: '回复成功', variant: 'default' }
       replyText.value = ''
       toast.success('回复已发送')
     } else {
-      replyStatus.value = { text: '回复失败', variant: 'destructive' }
+      requestStatus.value = { text: '回复失败', variant: 'destructive' }
       toast.error(`回复失败: ${response.message}`)
     }
   } catch (error) {
     console.error('回复失败:', error)
-    replyStatus.value = { text: '回复失败', variant: 'destructive' }
+    requestStatus.value = { text: '回复失败', variant: 'destructive' }
     toast.error('回复发送失败，请稍后重试')
+  } finally {
+    isReplying.value = false
+  }
+}
+
+const repeatMessage = async (message: SearchHit) => {
+  if (isReplying.value) return
+  isReplying.value = true
+  requestStatus.value = null
+
+  try {
+    const response = await apiService.repeatMessage(message.chat_id, message.id)
+
+    if (response.status === 'success') {
+      requestStatus.value = { text: '复读成功', variant: 'default' }
+      toast.success('复读已发送')
+    } else {
+      requestStatus.value = { text: '复读失败', variant: 'destructive' }
+      toast.error(`复读失败: ${response.message}`)
+    }
+  } catch (error) {
+    console.error('复读失败:', error)
+    requestStatus.value = { text: '复读失败', variant: 'destructive' }
+    toast.error('复读发送失败，请稍后重试')
   } finally {
     isReplying.value = false
   }
