@@ -57,7 +57,7 @@ export const useSearchStore = defineStore('search', () => {
 
   // 执行搜索
   async function search() {
-    if (!isApiKeyConfigured.value || !query.value.trim()) return
+    if (!isApiKeyConfigured.value) return
 
     isLoading.value = true
     try {
