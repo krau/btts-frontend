@@ -19,7 +19,7 @@
       <div class="flex items-center gap-2 sm:flex-shrink-0">
         <Button
           @click="handleSearch"
-          :disabled="!localQuery.trim() || isLoading"
+          :disabled="isLoading"
           class="flex-1 sm:flex-none shadow hover:shadow-md transition-shadow"
         >
           <SearchIcon v-if="!isLoading" />
@@ -301,8 +301,6 @@ watch(userIdInputs, (newUserIds) => {
 
 // 处理搜索
 function handleSearch() {
-  if (!localQuery.value.trim()) return
-
   searchStore.setQuery(localQuery.value)
   searchStore.search()
 }
