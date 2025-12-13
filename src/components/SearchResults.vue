@@ -108,7 +108,6 @@
         :default-page="currentPage"
         :items-per-page="pageSize"
         show-edges
-        @update:page="handlePageChange"
       >
         <PaginationContent>
           <PaginationFirst @click="goToPage(1)" />
@@ -210,11 +209,6 @@ function openMessageDialog(hit: SearchHit) {
 // 关闭消息对话框
 function closeMessageDialog() {
   isMessageDialogOpen.value = false
-}
-
-// 处理页面变化
-function handlePageChange(page: number) {
-  searchStore.goToPage(page)
 }
 
 function goToPage(page: number) {
