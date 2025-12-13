@@ -51,6 +51,7 @@
               <div
                 v-for="msg in messages"
                 :key="msg.id"
+                :data-msg-id="msg.id"
                 :ref="
                   (el) =>
                     msg.id === currentMessageId && setCurrentMessageEl(el as HTMLElement | null)
@@ -249,6 +250,8 @@ const lastBeforeAnchorId = ref<number | null>(null)
 const lastAfterAnchorId = ref<number | null>(null)
 const scrollContainer = ref<HTMLElement | null>(null)
 const currentMessageEl = ref<HTMLElement | null>(null)
+const isInitialLoad = ref(false) // 标记是否为初始加载阶段
+const isAdjustingScroll = ref(false) // 标记程序正在调整滚动位置
 
 const currentMessage = computed<SearchHit | null>(() => {
   if (currentMessageId.value == null) return props.message
@@ -268,6 +271,8 @@ function resetContext() {
   lastBeforeAnchorId.value = null
   lastAfterAnchorId.value = null
   currentMessageEl.value = null
+  isInitialLoad.value = false
+  isAdjustingScroll.value = false
   if (scrollContainer.value) {
     scrollContainer.value.scrollTop = 0
   }
@@ -284,6 +289,18 @@ function setCurrentMessageEl(el: HTMLElement | null) {
   }
 }
 
+// 滚动到当前消息，确保其可见
+function scrollToCurrentMessage() {
+  if (currentMessageEl.value && scrollContainer.value) {
+    isAdjustingScroll.value = true
+    currentMessageEl.value.scrollIntoView({ block: 'center', behavior: 'instant' })
+    // 延迟重置标志，给滚动事件处理完成的时间
+    requestAnimationFrame(() => {
+      isAdjustingScroll.value = false
+    })
+  }
+}
+
 function mergeMessages(newHits: SearchHit[]) {
   if (!newHits.length) return
   const map = new Map<number, SearchHit>()
@@ -296,35 +313,94 @@ function mergeMessages(newHits: SearchHit[]) {
   messages.value = Array.from(map.values()).sort((a, b) => a.timestamp - b.timestamp)
 }
 
+// 检查内容是否不足以滚动，如果是则主动加载更多（仅在初始加载阶段使用）
+async function checkAndLoadMoreIfNeeded() {
+  // 只在初始加载阶段执行
+  if (!isInitialLoad.value) return
+
+  const container = scrollContainer.value
+  if (!container) return
+
+  // 如果内容高度不足以产生滚动条，尝试加载更多消息
+  if (container.scrollHeight <= container.clientHeight) {
+    // 优先加载更晚的消息
+    if (hasMoreAfter.value && !isLoadingMoreAfter.value) {
+      await loadMoreAfter()
+      await nextTick()
+      // 递归检查，直到可以滚动或没有更多消息
+      if (isInitialLoad.value && container.scrollHeight <= container.clientHeight) {
+        await checkAndLoadMoreIfNeeded()
+      }
+    } else if (hasMoreBefore.value && !isLoadingMoreBefore.value) {
+      await loadMoreBefore()
+      await nextTick()
+      // 递归检查
+      if (isInitialLoad.value && container.scrollHeight <= container.clientHeight) {
+        await checkAndLoadMoreIfNeeded()
+      }
+    }
+  }
+}
+
 async function loadInitialContext(base: SearchHit) {
-  isLoadingInitial.value = true
+  // 标记为初始加载阶段
+  isInitialLoad.value = true
+  // 立即显示当前消息，不阻塞用户交互
+  messages.value = [base]
+  currentMessageId.value = base.id
+  currentChatId.value = base.chat_id
   hasMoreBefore.value = true
   hasMoreAfter.value = true
-  messages.value = []
   lastBeforeAnchorId.value = null
   lastAfterAnchorId.value = null
 
+  // 异步加载附近消息（不设置 isLoadingInitial，因为已有当前消息显示）
   try {
-    // 初始加载：以当前消息为起点，优先展示当前消息和其后的若干条
+    // 初始加载：以当前消息为起点，加载前后各 10 条，合并为单次请求
     const ids: number[] = []
-    for (let i = base.id; i <= base.id + 10; i++) {
+    for (let i = base.id - 10; i < base.id; i++) {
       if (i > 0) ids.push(i)
     }
+    for (let i = base.id + 1; i <= base.id + 10; i++) {
+      ids.push(i)
+    }
 
-    const response = await apiService.fetchMessages(base.chat_id, ids)
+    if (ids.length === 0) return
+
+    const response = await apiService.fetchMessages(base.chat_id, ids).catch(() => ({ hits: [] }))
     const hits = response.hits || []
 
-    // 将当前消息放在列表开头，其余消息按时间排序追加在后
-    const others = hits.filter((m) => m.id !== base.id)
-    others.sort((a, b) => a.timestamp - b.timestamp)
+    // 合并消息
+    if (hits.length) {
+      mergeMessages(hits)
+    }
 
-    messages.value = [base, ...others]
-    currentMessageId.value = base.id
-    currentChatId.value = base.chat_id
+    // 等待 DOM 更新后滚动到当前消息
+    await nextTick()
+    scrollToCurrentMessage()
+
+    // 检查是否需要继续加载更多消息以填满容器
+    await nextTick()
+    await checkAndLoadMoreIfNeeded()
+
+    // 填满后再次确保当前消息可见
+    await nextTick()
+    scrollToCurrentMessage()
+
+    // 确保初始加载阶段结束
+    isInitialLoad.value = false
+
+    // 更新边界状态
+    const beforeHits = hits.filter((m) => m.id < base.id)
+    const afterHits = hits.filter((m) => m.id > base.id)
+    if (beforeHits.length === 0) {
+      hasMoreBefore.value = base.id > 1
+    }
+    if (afterHits.length === 0) {
+      hasMoreAfter.value = true // 可能还有更多
+    }
   } catch (error) {
     console.error('加载附近消息失败:', error)
-  } finally {
-    isLoadingInitial.value = false
   }
 }
 
@@ -332,15 +408,34 @@ async function loadMoreBefore() {
   if (isLoadingMoreBefore.value || !hasMoreBefore.value) return
   if (!currentChatId.value || !messages.value.length) return
 
-  isLoadingMoreBefore.value = true
   const first = messages.value[0]
 
   // 避免在同一个锚点上重复请求
   if (lastBeforeAnchorId.value === first.id) {
-    isLoadingMoreBefore.value = false
     return
   }
+
+  isLoadingMoreBefore.value = true
   lastBeforeAnchorId.value = first.id
+
+  // 记录当前第一个可见消息的位置信息
+  const container = scrollContainer.value
+  if (!container) return
+
+  // 找到当前视口中第一个可见的消息元素
+  const messageElements = container.querySelectorAll('[data-msg-id]')
+  let anchorElement: Element | null = null
+  let anchorOffsetTop = 0
+
+  for (const el of messageElements) {
+    const rect = el.getBoundingClientRect()
+    const containerRect = container.getBoundingClientRect()
+    if (rect.top >= containerRect.top) {
+      anchorElement = el
+      anchorOffsetTop = rect.top - containerRect.top
+      break
+    }
+  }
 
   try {
     // 向上滚动到底：加载更早的 20 条
@@ -360,7 +455,33 @@ async function loadMoreBefore() {
       hasMoreBefore.value = false
       return
     }
+
+    // 设置滚动调整标志
+    isAdjustingScroll.value = true
     mergeMessages(hits)
+
+    // 等待 DOM 更新后恢复锚点元素的位置
+    await nextTick()
+    await nextTick() // 双重 nextTick 确保 DOM 完全更新
+
+    if (anchorElement && container) {
+      const anchorMsgId = anchorElement.getAttribute('data-msg-id')
+      if (anchorMsgId) {
+        const newAnchorElement = container.querySelector(`[data-msg-id="${anchorMsgId}"]`)
+        if (newAnchorElement) {
+          const newRect = newAnchorElement.getBoundingClientRect()
+          const containerRect = container.getBoundingClientRect()
+          const currentOffsetTop = newRect.top - containerRect.top
+          const scrollAdjustment = currentOffsetTop - anchorOffsetTop
+          container.scrollTop += scrollAdjustment
+        }
+      }
+    }
+
+    // 延迟重置标志
+    requestAnimationFrame(() => {
+      isAdjustingScroll.value = false
+    })
   } catch (error) {
     const status = (error as { response?: { status?: number } })?.response?.status
     if (status === 404) {
@@ -379,14 +500,14 @@ async function loadMoreAfter() {
   if (isLoadingMoreAfter.value || !hasMoreAfter.value) return
   if (!currentChatId.value || !messages.value.length) return
 
-  isLoadingMoreAfter.value = true
   const last = messages.value[messages.value.length - 1]
 
   // 避免在同一个锚点上重复请求
   if (lastAfterAnchorId.value === last.id) {
-    isLoadingMoreAfter.value = false
     return
   }
+
+  isLoadingMoreAfter.value = true
   lastAfterAnchorId.value = last.id
 
   try {
@@ -423,6 +544,9 @@ async function loadMoreAfter() {
 }
 
 function handleScroll(event: Event) {
+  // 程序调整滚动位置时不触发加载
+  if (isAdjustingScroll.value || isInitialLoad.value) return
+
   const el = event.target as HTMLElement
   const threshold = 40
 
