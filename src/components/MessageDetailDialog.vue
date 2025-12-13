@@ -343,6 +343,13 @@ async function checkAndLoadMoreIfNeeded() {
 }
 
 async function loadInitialContext(base: SearchHit) {
+  // 先重置之前的状态
+  replyText.value = ''
+  requestStatus.value = null
+  messages.value = []
+  currentMessageEl.value = null
+  isAdjustingScroll.value = false
+
   // 标记为初始加载阶段
   isInitialLoad.value = true
   // 立即显示当前消息，不阻塞用户交互
@@ -567,12 +574,8 @@ function handleMessageClick(msg: SearchHit) {
 // 处理对话框打开状态变化
 function handleUpdateOpen(value: boolean) {
   emit('update:isOpen', value)
-  if (!value) {
-    // 关闭对话框时重置状态
-    replyText.value = ''
-    requestStatus.value = null
-    resetContext()
-  }
+  // 关闭时不立即重置，让动画自然完成
+  // 状态会在下次打开时通过 loadInitialContext 重置
 }
 
 // 打开对话框时初始化附近消息
