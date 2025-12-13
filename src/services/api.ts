@@ -7,6 +7,7 @@ import type {
   ApiResponse,
   ReplyMessageRequest,
   MessageResponse,
+  FetchMessagesRequest,
 } from '@/types/api'
 import { buildReqToken } from '@/utils/helpers'
 
@@ -110,6 +111,27 @@ class ApiService {
     const response = await api
       .post('index/multi-search', { json: request })
       .json<ApiResponse<SearchResponse>>()
+    return (
+      response.results || {
+        hits: [],
+        estimatedTotalHits: 0,
+        limit: 10,
+        offset: 0,
+        processingTimeMs: 0,
+        semanticHitCount: 0,
+      }
+    )
+  }
+
+  // 获取附近/指定消息列表
+  async fetchMessages(chatId: number, ids: number[]): Promise<SearchResponse> {
+    const api = this.createKyInstance()
+    const payload: FetchMessagesRequest = { ids }
+
+    const response = await api
+      .post(`index/${chatId}/msgs/fetch`, { json: payload })
+      .json<ApiResponse<SearchResponse>>()
+
     return (
       response.results || {
         hits: [],

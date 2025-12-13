@@ -82,6 +82,10 @@ export interface ApiResponse<T> {
   master?: boolean
 }
 
+export interface FetchMessagesRequest {
+  ids: number[]
+}
+
 export const MESSAGE_TYPES = [
   'text',
   'photo',

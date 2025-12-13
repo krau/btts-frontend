@@ -208,6 +208,7 @@ import { ref, watch, onMounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import {
   SearchIcon,
+  UserIcon,
   LoaderIcon,
   MessageSquareIcon,
   ImageIcon,
