@@ -69,6 +69,9 @@ export const useSearchStore = defineStore('search', () => {
 
       if (selectedChatIds.value.length > 0) {
         request.chat_ids = selectedChatIds.value
+      } else {
+        // 未指定聊天时搜索所有
+        request.chat_ids = indexedChats.value.map((chat) => chat.chat_id)
       }
 
       if (selectedUserIds.value.length > 0) {

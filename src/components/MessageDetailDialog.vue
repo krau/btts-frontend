@@ -1,6 +1,6 @@
 <template>
   <Dialog :open="isOpen" @update:open="handleUpdateOpen">
-    <DialogContent class="sm:max-w-[600px] max-h-[80vh]">
+    <DialogContent class="sm:max-w-150 max-h-[80vh]">
       <DialogHeader>
         <DialogTitle class="flex items-center space-x-2">
           <Badge v-if="message" :variant="getMessageTypeVariant(message.type)">
@@ -27,7 +27,7 @@
 
         <div
           v-if="message"
-          class="message-content text-sm leading-relaxed p-4 bg-muted/50 rounded-md break-words"
+          class="message-content text-sm leading-relaxed p-4 bg-muted/50 rounded-md wrap-break-word"
           v-html="highlightedContent"
         ></div>
 

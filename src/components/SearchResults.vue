@@ -40,7 +40,7 @@
             <!-- 消息内容 -->
             <div class="space-y-2 flex-1 flex flex-col">
               <div
-                class="message-content leading-relaxed p-3 bg-muted/50 rounded-md break-words flex-1"
+                class="message-content leading-relaxed p-3 bg-muted/50 rounded-md wrap-break-word flex-1"
                 v-html="highlightedMessage(hit)"
               />
             </div>
@@ -179,10 +179,6 @@ import type { SearchHit } from '@/types/api'
 const searchStore = useSearchStore()
 const { searchResults, isLoading, totalHits, totalPages, currentPage, pageSize, query } =
   storeToRefs(searchStore)
-
-// 搜索结果容器引用
-const searchResultsContainer = ref<HTMLElement>()
-
 // 对话框状态
 const isMessageDialogOpen = ref(false)
 const selectedMessage = ref<SearchHit | null>(null)

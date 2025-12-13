@@ -16,7 +16,7 @@
       </div>
 
       <!-- 控制按钮 - 移动端第二行，桌面端右侧 -->
-      <div class="flex items-center gap-2 sm:flex-shrink-0">
+      <div class="flex items-center gap-2 sm:shrink-0">
         <Button
           @click="handleSearch"
           :disabled="isLoading"
@@ -27,7 +27,7 @@
           搜索
         </Button>
         <Select :model-value="pageSize.toString()" @update:model-value="handlePageSizeChange">
-          <SelectTrigger class="h-10 w-auto min-w-[120px] shadow hover:shadow-md transition-shadow">
+          <SelectTrigger class="h-10 w-auto min-w-30 shadow hover:shadow-md transition-shadow">
             <div class="flex items-center justify-between w-full">
               <span>每页 {{ pageSize }} 条</span>
             </div>
