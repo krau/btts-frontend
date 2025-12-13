@@ -308,7 +308,6 @@ function handleSearch() {
 
 // 处理消息类型变化
 function handleTypeChange(type: string, checked: boolean | 'indeterminate') {
-  console.error('handleTypeChange called with:', type, checked)
   if (checked === 'indeterminate') return
   const types = [...selectedTypes.value]
   if (checked) {
