@@ -23,6 +23,9 @@ export const useSearchStore = defineStore('search', () => {
   const indexedChats = ref<IndexChat[]>([])
   const isLoadingChats = ref(false)
 
+  // 当前 API Key 是否为 master key
+  const isMasterKey = ref(false)
+
   // 计算属性
   const totalPages = computed(() => Math.ceil(totalHits.value / pageSize.value))
   const offset = computed(() => (currentPage.value - 1) * pageSize.value)
@@ -34,11 +37,14 @@ export const useSearchStore = defineStore('search', () => {
   function setApiKey(key: string) {
     apiKey.value = key
     apiService.setApiKey(key)
+    // 切换 Key 后需重新判定是否为 master
+    isMasterKey.value = false
   }
 
   function clearApiKey() {
     apiKey.value = null
     apiService.clearApiKey()
+    isMasterKey.value = false
   }
 
   // 加载聊天列表
@@ -47,7 +53,9 @@ export const useSearchStore = defineStore('search', () => {
 
     isLoadingChats.value = true
     try {
-      indexedChats.value = await apiService.getIndexedChats()
+      const { chats, master } = await apiService.getIndexedChats()
+      indexedChats.value = chats
+      isMasterKey.value = master
     } catch (error) {
       throw error
     } finally {
@@ -166,6 +174,7 @@ export const useSearchStore = defineStore('search', () => {
     // API Key
     apiKey,
     isApiKeyConfigured,
+    isMasterKey,
 
     // 方法
     setApiKey,

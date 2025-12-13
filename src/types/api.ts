@@ -78,6 +78,8 @@ export interface ApiResponse<T> {
   results?: T
   chats?: T
   index?: T
+  // 标识当前 API Key 是否为 master key（仅部分接口返回）
+  master?: boolean
 }
 
 export const MESSAGE_TYPES = [

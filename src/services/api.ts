@@ -69,11 +69,14 @@ class ApiService {
     })
   }
 
-  // 获取所有已索引的聊天
-  async getIndexedChats(): Promise<IndexChat[]> {
+  // 获取所有已索引的聊天，并返回当前 key 是否为 master
+  async getIndexedChats(): Promise<{ chats: IndexChat[]; master: boolean }> {
     const api = this.createKyInstance()
     const response = await api.get('indexed').json<ApiResponse<IndexChat[]>>()
-    return response.chats || []
+    return {
+      chats: response.chats || [],
+      master: response.master ?? false,
+    }
   }
 
   // 获取指定聊天的索引信息

@@ -31,18 +31,24 @@
           v-html="highlightedContent"
         ></div>
 
-        <!-- 输入框 -->
+        <!-- 输入框 / 操作区 -->
         <div v-if="message" class="m-2">
           <div class="flex items-center justify-between mb-2">
-            <div class="text-sm font-medium flex items-center">
+            <div class="text-sm font-medium flex items-center" v-if="isMasterKey">
               <ReplyIcon class="h-4 w-4 text-primary" />
               对此消息进行操作
             </div>
-            <Badge v-if="requestStatus" :variant="requestStatus.variant">{{
+            <div class="text-sm font-medium flex items-center" v-else>
+              <ReplyIcon class="h-4 w-4 text-primary" />
+              快捷操作
+            </div>
+            <Badge v-if="requestStatus && isMasterKey" :variant="requestStatus.variant">{{
               requestStatus.text
             }}</Badge>
           </div>
-          <div class="flex space-x-2">
+
+          <!-- master key：展示完整操作（回复、复读、文件预览等） -->
+          <div v-if="isMasterKey" class="flex space-x-2">
             <Input
               v-model="replyText"
               placeholder="输入回复内容..."
@@ -86,6 +92,14 @@
               <LoaderIcon v-else class="animate-spin" />
             </Button>
           </div>
+
+          <!-- 非 master key：仅保留复制全文（纯前端功能） -->
+          <div v-else class="flex justify-end">
+            <Button variant="outline" @click="copyMessage(message.message)">
+              <ZapIcon class="mr-1 h-4 w-4" />
+              复制全文
+            </Button>
+          </div>
         </div>
       </div>
     </DialogContent>
@@ -125,6 +139,8 @@ import {
 } from '@/utils/helpers'
 import type { SearchHit } from '@/types/api'
 import { copyMessage } from '@/utils/helpers'
+import { useSearchStore } from '@/stores/search'
+import { storeToRefs } from 'pinia'
 
 // 组件属性定义
 const props = defineProps<{
@@ -146,6 +162,10 @@ const requestStatus = ref<{
   text: string
   variant: 'default' | 'secondary' | 'destructive'
 } | null>(null)
+
+// 全局状态：当前 API Key 是否为 master key
+const searchStore = useSearchStore()
+const { isMasterKey } = storeToRefs(searchStore)
 
 // 计算属性：高亮的消息内容
 const highlightedContent = computed(() => {
