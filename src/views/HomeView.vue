@@ -87,8 +87,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useRoute, useRouter } from 'vue-router'
 import { SearchIcon, AlertTriangleIcon, XCircleIcon, XIcon } from 'lucide-vue-next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -97,9 +98,13 @@ import SearchResults from '@/components/SearchResults.vue'
 import ApiKeyDialog from '@/components/ApiKeyDialog.vue'
 import DarkModeMenu from '@/components/DarkModeMenu.vue'
 import { useSearchStore } from '@/stores/search'
+import { validateApiKey } from '@/utils/helpers'
 
 const searchStore = useSearchStore()
-const { isApiKeyConfigured } = storeToRefs(searchStore)
+const { isApiKeyConfigured, apiKey } = storeToRefs(searchStore)
+
+const route = useRoute()
+const router = useRouter()
 
 // 本地状态
 const isApiDialogOpen = ref(false)
@@ -120,4 +125,37 @@ async function handleApiKeySaved() {
     toast.error('加载聊天列表失败')
   }
 }
+
+// 通过 URL 参数自动配置 API Key，例如 /?key=xxxx
+onMounted(async () => {
+  const queryKey = route.query.key
+  const key = Array.isArray(queryKey) ? queryKey[0] : queryKey
+
+  if (!key || typeof key !== 'string') return
+  if (!validateApiKey(key)) {
+    // 无效 key，直接移除 URL 参数
+    await router.replace({ query: { ...route.query, key: undefined } })
+    return
+  }
+
+  // 如果当前已经是同一个 key，只做 URL 清理
+  if (apiKey.value === key) {
+    await router.replace({ query: { ...route.query, key: undefined } })
+    return
+  }
+
+  try {
+    searchStore.setApiKey(key)
+    await searchStore.loadIndexedChats()
+    const { toast } = await import('vue-sonner')
+    toast.success('已根据链接自动配置 API Key')
+  } catch (err) {
+    console.error('Failed to auto set API key from URL:', err)
+    const { toast } = await import('vue-sonner')
+    toast.error('配置 API Key 失败')
+  } finally {
+    // 配置成功或失败都移除 URL 中的 key，避免泄露
+    await router.replace({ query: { ...route.query, key: undefined } })
+  }
+})
 </script>

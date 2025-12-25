@@ -9,9 +9,7 @@
     <DialogContent class="sm:max-w-md">
       <DialogHeader>
         <DialogTitle>配置 API Key</DialogTitle>
-        <DialogDescription>
-          请输入你的 BTTS API Key 以访问搜索功能。API Key 将安全地存储在本地浏览器中。
-        </DialogDescription>
+        <DialogDescription> 请输入你的 BTTS API Key 以访问搜索功能。 </DialogDescription>
       </DialogHeader>
 
       <div class="space-y-4">
