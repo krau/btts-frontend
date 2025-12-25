@@ -29,6 +29,7 @@
         <div
           ref="scrollContainer"
           class="space-y-2 pb-2 flex-1 overflow-y-auto"
+          style="scrollbar-gutter: stable"
           @scroll="handleScroll"
         >
           <div
