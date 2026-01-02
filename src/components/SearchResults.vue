@@ -1,8 +1,39 @@
 <template>
   <div class="space-y-4" ref="searchResultsContainer">
+    <div
+      v-if="totalPages > 1 && searchResults.length > 0"
+      class="hidden lg:flex items-center justify-between gap-3 sticky top-0 z-10 bg-background/90 backdrop-blur px-1 py-2 border-b"
+    >
+      <Pagination
+        :total="totalHits"
+        :sibling-count="1"
+        :default-page="currentPage"
+        :items-per-page="pageSize"
+        show-edges
+      >
+        <PaginationContent class="flex-wrap">
+          <PaginationFirst @click="goToPage(1)" />
+          <PaginationPrevious @click="goToPage(Math.max(1, currentPage - 1))" />
+          <PaginationEllipsis v-if="currentPage > 3" />
+          <PaginationItem
+            v-for="page in visiblePages"
+            :key="page"
+            :value="page"
+            :is-active="page === currentPage"
+            @click="goToPage(page)"
+          >
+            {{ page }}
+          </PaginationItem>
+          <PaginationEllipsis v-if="currentPage < totalPages - 2" />
+          <PaginationNext @click="goToPage(Math.min(totalPages, currentPage + 1))" />
+          <PaginationLast @click="goToPage(totalPages)" />
+        </PaginationContent>
+      </Pagination>
+    </div>
+
     <!-- 搜索结果列表 -->
     <div
-      v-if="searchResults.length > 0 && !isLoading"
+      v-if="searchResults.length > 0"
       class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
     >
       <Card
@@ -101,7 +132,7 @@
     </div>
 
     <!-- 分页 -->
-    <div v-if="totalPages > 1" class="flex justify-center mt-6">
+    <div v-if="totalPages > 1" class="flex justify-center mt-6 lg:hidden">
       <Pagination
         :total="totalHits"
         :sibling-count="1"
