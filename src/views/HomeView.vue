@@ -44,43 +44,61 @@
         </Card>
       </div>
 
-      <!-- 搜索表单 -->
-      <div class="mb-6">
-        <Card>
-          <CardHeader>
-            <CardTitle class="flex items-center space-x-2">
-              <SearchIcon class="h-5 w-5" />
-              <span>搜索消息</span>
-            </CardTitle>
-            <CardDescription> 在 Telegram 消息中搜索内容，支持多种过滤条件 </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <SearchForm />
-          </CardContent>
-        </Card>
-      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6">
+        <!-- 桌面端左侧聊天选择 -->
+        <div class="hidden lg:block lg:sticky lg:top-6 lg:h-[calc(100vh-96px)]">
+          <Card class="h-full">
+            <CardHeader>
+              <CardTitle class="flex items-center space-x-2">
+                <SearchIcon class="h-5 w-5" />
+                <span>选择聊天</span>
+              </CardTitle>
+              <CardDescription> 在开始搜索前选择需要检索的聊天 </CardDescription>
+            </CardHeader>
+            <CardContent class="h-full">
+              <ChatSelector class="h-full" />
+            </CardContent>
+          </Card>
+        </div>
 
-      <!-- 搜索结果 -->
-      <SearchResults />
+        <div class="space-y-6">
+          <!-- 搜索表单 -->
+          <Card>
+            <CardHeader>
+              <CardTitle class="flex items-center space-x-2">
+                <SearchIcon class="h-5 w-5" />
+                <span>搜索消息</span>
+              </CardTitle>
+              <CardDescription> 在 Telegram 消息中搜索内容，支持多种过滤条件 </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SearchForm />
+            </CardContent>
+          </Card>
 
-      <!-- 错误提示 -->
-      <div v-if="error" class="mt-6">
-        <Card class="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30">
-          <CardContent class="p-4">
-            <div class="flex items-center space-x-3">
-              <XCircleIcon class="h-5 w-5 text-red-600 dark:text-red-400" />
-              <div>
-                <h3 class="font-medium text-red-800 dark:text-red-200">操作失败</h3>
-                <p class="text-sm text-red-700 dark:text-red-300 mt-1">
-                  {{ error }}
-                </p>
-              </div>
-              <Button variant="ghost" size="sm" @click="error = ''">
-                <XIcon class="h-4 w-4" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          <!-- 搜索结果 -->
+          <SearchResults />
+
+          <!-- 错误提示 -->
+          <div v-if="error">
+            <Card class="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30">
+              <CardContent class="p-4">
+                <div class="flex items-center space-x-3">
+                  <XCircleIcon class="h-5 w-5 text-red-600 dark:text-red-400" />
+                  <div>
+                    <h3 class="font-medium text-red-800 dark:text-red-200">操作失败</h3>
+                    <p class="text-sm text-red-700 dark:text-red-300 mt-1">
+                      {{ error }}
+                    </p>
+                  </div>
+                  <Button variant="ghost" size="sm" @click="error = ''">
+                    <XIcon class="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -97,6 +115,7 @@ import SearchForm from '@/components/SearchForm.vue'
 import SearchResults from '@/components/SearchResults.vue'
 import ApiKeyDialog from '@/components/ApiKeyDialog.vue'
 import DarkModeMenu from '@/components/DarkModeMenu.vue'
+import ChatSelector from '@/components/ChatSelector.vue'
 import { useSearchStore } from '@/stores/search'
 import { validateApiKey } from '@/utils/helpers'
 
