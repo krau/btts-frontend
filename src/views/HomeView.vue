@@ -2,10 +2,10 @@
   <div class="min-h-screen bg-background">
     <!-- 顶部导航栏 -->
     <header class="border-b bg-card">
-      <div class="container mx-auto px-4 py-4">
+      <div class="container mx-auto px-4 py-2">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-4">
-            <h1 class="text-2xl font-bold p-2">BTTS</h1>
+            <h1 class="text-2xl font-bold p-1">BTTS</h1>
             <a class="text-sm text-muted-foreground" href="https://github.com/krau/btts"
               >Telegram 消息搜索</a
             >
@@ -23,7 +23,7 @@
     </header>
 
     <!-- 主要内容区域 -->
-    <main class="container mx-auto px-4 py-6">
+    <main class="container mx-auto px-4 py-4">
       <!-- API Key 未配置提示 -->
       <div v-if="!isApiKeyConfigured" class="mb-6">
         <Card class="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30">
@@ -44,7 +44,7 @@
         </Card>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-4">
         <!-- 桌面端左侧聊天选择 -->
         <div class="hidden lg:block lg:sticky lg:top-6 lg:h-[calc(100vh-96px)]">
           <Card class="h-full">
