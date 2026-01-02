@@ -32,74 +32,87 @@
     </div>
 
     <!-- 搜索结果列表 -->
-    <div
-      v-if="searchResults.length > 0"
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-    >
-      <Card
-        v-for="hit in searchResults"
-        :key="`${hit.chat_id}-${hit.id}`"
-        class="transition-all duration-200 h-full flex flex-col"
+    <div v-if="searchResults.length > 0" class="relative">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card
+          v-for="hit in searchResults"
+          :key="`${hit.chat_id}-${hit.id}`"
+          class="transition-all duration-200 h-full flex flex-col"
+        >
+          <CardContent class="flex-1 flex flex-col">
+            <div class="space-y-3 flex-1 flex flex-col">
+              <!-- 用户和聊天信息 -->
+              <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center space-x-2">
+                  <Badge :variant="getMessageTypeVariant(hit.type)">
+                    {{ formatMessageType(hit.type) }}
+                  </Badge>
+                  <UserIcon class="h-4 w-4 text-muted-foreground" />
+                  <span
+                    class="font-medium cursor-pointer text-muted-foreground hover:text-primary"
+                    @click="copyMessage(hit.user_id.toString())"
+                  >
+                    {{ hit.user_full_name }}
+                  </span>
+                </div>
+                <div
+                  class="flex items-center space-x-2 text-muted-foreground hover:text-primary cursor-pointer"
+                  @click="copyMessage(`https://t.me/c/${hit.chat_id}/${hit.id}`, '消息链接已复制')"
+                >
+                  <MessageCircleIcon class="h-4 w-4 text-muted-foreground" />
+                  <span>
+                    {{ hit.chat_title || `${hit.chat_id}` }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- 消息内容 -->
+              <div class="space-y-2 flex-1 flex flex-col">
+                <div
+                  class="message-content leading-relaxed p-3 bg-muted/50 rounded-md wrap-break-word flex-1"
+                  v-html="highlightedMessage(hit)"
+                />
+              </div>
+
+              <!-- 操作按钮 -->
+              <div class="flex items-center justify-between pt-2">
+                <div class="flex items-center space-x-2 text-sm text-muted-foreground">
+                  <ClockIcon class="h-3 w-3" />
+                  <span>{{ formatTimestamp(hit.timestamp) }}</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <Button
+                    :as="'a'"
+                    :href="`https://t.me/c/${hit.chat_id}/${hit.id}`"
+                    target="_blank"
+                    variant="outline"
+                    title="跳转至消息"
+                  >
+                    <LinkIcon class="h-3 w-3" />
+                  </Button>
+                  <Button variant="outline" @click="openMessageDialog(hit)" title="查看详情">
+                    <EyeIcon class="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <!-- 翻页加载时的轻量提示，保持布局不变 -->
+      <div
+        v-if="isPaginating"
+        class="pointer-events-none absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm"
       >
-        <CardContent class="flex-1 flex flex-col">
-          <div class="space-y-3 flex-1 flex flex-col">
-            <!-- 用户和聊天信息 -->
-            <div class="flex items-center justify-between text-sm">
-              <div class="flex items-center space-x-2">
-                <Badge :variant="getMessageTypeVariant(hit.type)">
-                  {{ formatMessageType(hit.type) }}
-                </Badge>
-                <UserIcon class="h-4 w-4 text-muted-foreground" />
-                <span
-                  class="font-medium cursor-pointer text-muted-foreground hover:text-primary"
-                  @click="copyMessage(hit.user_id.toString())"
-                >
-                  {{ hit.user_full_name }}
-                </span>
-              </div>
-              <div
-                class="flex items-center space-x-2 text-muted-foreground hover:text-primary cursor-pointer"
-                @click="copyMessage(`https://t.me/c/${hit.chat_id}/${hit.id}`, '消息链接已复制')"
-              >
-                <MessageCircleIcon class="h-4 w-4 text-muted-foreground" />
-                <span>
-                  {{ hit.chat_title || `${hit.chat_id}` }}
-                </span>
-              </div>
-            </div>
-
-            <!-- 消息内容 -->
-            <div class="space-y-2 flex-1 flex flex-col">
-              <div
-                class="message-content leading-relaxed p-3 bg-muted/50 rounded-md wrap-break-word flex-1"
-                v-html="highlightedMessage(hit)"
-              />
-            </div>
-
-            <!-- 操作按钮 -->
-            <div class="flex items-center justify-between pt-2">
-              <div class="flex items-center space-x-2 text-sm text-muted-foreground">
-                <ClockIcon class="h-3 w-3" />
-                <span>{{ formatTimestamp(hit.timestamp) }}</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <Button
-                  :as="'a'"
-                  :href="`https://t.me/c/${hit.chat_id}/${hit.id}`"
-                  target="_blank"
-                  variant="outline"
-                  title="跳转至消息"
-                >
-                  <LinkIcon class="h-3 w-3" />
-                </Button>
-                <Button variant="outline" @click="openMessageDialog(hit)" title="查看详情">
-                  <EyeIcon class="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        <div class="flex items-center gap-2 text-sm text-muted-foreground">
+          <span
+            class="inline-block h-4 w-4 rounded-full border-2 border-muted-foreground/30 border-t-primary animate-spin"
+            aria-hidden="true"
+          />
+          <span>正在加载...</span>
+        </div>
+      </div>
     </div>
 
     <!-- 空状态 -->
@@ -110,7 +123,7 @@
     </div>
 
     <!-- 加载状态 -->
-    <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div v-else-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <Card v-for="i in 6" :key="i" class="animate-pulse h-full">
         <CardContent class="p-4">
           <div class="space-y-3">
@@ -212,6 +225,9 @@ const { searchResults, isLoading, totalHits, totalPages, currentPage, pageSize, 
 // 对话框状态
 const isMessageDialogOpen = ref(false)
 const selectedMessage = ref<SearchHit | null>(null)
+
+// 翻页时的加载状态（保持结果可见，避免布局跳动）
+const isPaginating = computed(() => isLoading.value && searchResults.value.length > 0)
 
 // 计算可见的页码
 const visiblePages = computed(() => {
