@@ -17,8 +17,8 @@
       </Button>
     </div>
 
-    <div class="relative flex-1 flex flex-col">
-      <div class="relative mb-1.5">
+    <div class="relative flex-1 flex flex-col min-h-0">
+      <div class="relative mb-1.5 shrink-0">
         <SearchIcon
           class="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
         />
@@ -30,7 +30,7 @@
       </div>
 
       <div
-        class="border rounded-md max-h-32 overflow-y-auto p-1 bg-background lg:max-h-none lg:flex-1"
+        class="border rounded-md overflow-y-auto p-1 bg-background max-h-32 lg:max-h-none lg:flex-1 lg:min-h-0"
       >
         <div v-if="isLoadingChats" class="flex items-center justify-center p-4">
           <LoaderIcon class="h-4 w-4 animate-spin mr-2" />
