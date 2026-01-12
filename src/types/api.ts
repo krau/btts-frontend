@@ -30,6 +30,8 @@ export interface SearchResponse {
 
 export interface SearchOnChatRequest {
   query: string
+  disable_ocred?: boolean // [TODO]
+  enable_aigenerated?: boolean // [TODO]
   limit?: number
   offset?: number
   users?: number[]
@@ -38,6 +40,12 @@ export interface SearchOnChatRequest {
 
 export interface SearchOnMultiChatRequest {
   query: string
+  disable_ocred?: boolean // [TODO]
+  enable_aigenerated?: boolean // [TODO]
+  // 搜索所有已索引聊天, 否则使用 chat_ids 指定的聊天列表
+  // 只有 master API Key 才能使用, 否则无效
+  // chat_ids 和 all_chats 必须至少指定一个
+  all_chats?: boolean
   chat_ids?: number[]
   limit?: number
   offset?: number

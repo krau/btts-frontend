@@ -78,8 +78,14 @@ export const useSearchStore = defineStore('search', () => {
       if (selectedChatIds.value.length > 0) {
         request.chat_ids = selectedChatIds.value
       } else {
-        // 未指定聊天时搜索所有
-        request.chat_ids = indexedChats.value.map((chat) => chat.chat_id)
+        // 未指定聊天时的处理逻辑
+        if (isMasterKey.value) {
+          // master key 且没有选中聊天时,使用 all_chats=true 搜索所有已索引聊天
+          request.all_chats = true
+        } else {
+          // 普通 key 则搜索当前可见的所有聊天
+          request.chat_ids = indexedChats.value.map((chat) => chat.chat_id)
+        }
       }
 
       if (selectedUserIds.value.length > 0) {
