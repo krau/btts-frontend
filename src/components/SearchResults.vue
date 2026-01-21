@@ -42,25 +42,26 @@
           <CardContent class="flex-1 flex flex-col">
             <div class="space-y-3 flex-1 flex flex-col">
               <!-- 用户和聊天信息 -->
-              <div class="flex items-center justify-between text-sm">
-                <div class="flex items-center space-x-2">
-                  <Badge :variant="getMessageTypeVariant(hit.type)">
+              <div class="flex items-center justify-between text-sm gap-2">
+                <div class="flex items-center space-x-2 min-w-0 shrink">
+                  <Badge :variant="getMessageTypeVariant(hit.type)" class="shrink-0">
                     {{ formatMessageType(hit.type) }}
                   </Badge>
-                  <UserIcon class="h-4 w-4 text-muted-foreground" />
+                  <UserIcon class="h-4 w-4 text-muted-foreground shrink-0" />
                   <span
-                    class="font-medium cursor-pointer text-muted-foreground hover:text-primary"
+                    class="font-medium cursor-pointer text-muted-foreground hover:text-primary truncate"
                     @click="copyMessage(hit.user_id.toString())"
+                    :title="hit.user_full_name"
                   >
                     {{ hit.user_full_name }}
                   </span>
                 </div>
                 <div
-                  class="flex items-center space-x-2 text-muted-foreground hover:text-primary cursor-pointer"
+                  class="flex items-center space-x-2 text-muted-foreground hover:text-primary cursor-pointer min-w-0 shrink"
                   @click="copyMessage(`https://t.me/c/${hit.chat_id}/${hit.id}`, '消息链接已复制')"
                 >
-                  <MessageCircleIcon class="h-4 w-4 text-muted-foreground" />
-                  <span>
+                  <MessageCircleIcon class="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span class="truncate" :title="hit.chat_title || `${hit.chat_id}`">
                     {{ hit.chat_title || `${hit.chat_id}` }}
                   </span>
                 </div>

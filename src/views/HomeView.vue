@@ -48,7 +48,7 @@
         <!-- 桌面端左侧聊天选择 -->
         <div class="hidden lg:block lg:sticky lg:top-6 lg:h-[calc(100vh-96px)]">
           <Card class="h-full flex flex-col">
-            <CardHeader class="flex-shrink-0">
+            <CardHeader class="shrink-0">
               <CardTitle class="flex items-center space-x-2">
                 <SearchIcon class="h-5 w-5" />
                 <span>选择聊天</span>
