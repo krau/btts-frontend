@@ -202,10 +202,7 @@ const visiblePages = computed(() => {
 
 // 获取高亮的消息内容
 function highlightedMessage(hit: SearchHit): string {
-  const displayText = hit.full_formatted_text || isBlank(hit._formatted?.ocred) && isBlank(hit._formatted?.aigenerated)
-    ? hit._formatted?.message || hit.full_text
-    : hit.full_text
-  return highlightSearchTerms(displayText, query.value)
+  return highlightSearchTerms(hit.full_formatted_text, query.value)
 }
 
 // 打开消息对话框
@@ -222,9 +219,5 @@ function closeMessageDialog() {
 function goToPage(page: number) {
   if (page < 1 || page > totalPages.value) return
   searchStore.goToPage(page)
-}
-
-function isBlank(str: string | null | undefined): boolean {
-  return !str || /^\s*$/.test(str)
 }
 </script>

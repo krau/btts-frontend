@@ -22,7 +22,7 @@ export interface SearchHit {
   full_text: string
   ocred?: string
   aigenerated?: string
-  full_formatted_text?: string
+  full_formatted_text: string
 }
 
 export interface SearchResponse {
