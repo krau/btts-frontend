@@ -5,6 +5,8 @@ export interface SearchHit {
     chat_id?: string
     id?: string
     message?: string
+    ocred?: string
+    aigenerated?: string
     timestamp?: string
     type?: string
     user_id?: string
@@ -17,6 +19,10 @@ export interface SearchHit {
   type: string
   user_full_name?: string
   user_id: number
+  full_text: string
+  ocred?: string
+  aigenerated?: string
+  full_formatted_text?: string
 }
 
 export interface SearchResponse {

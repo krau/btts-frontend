@@ -136,7 +136,7 @@
                 <DropdownMenuLabel class="font-semibold">快捷功能</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                  <DropdownMenuItem @click="copyMessage(currentMessage.message)">
+                  <DropdownMenuItem @click="copyMessage(currentMessage.full_text)">
                     <span>复制全文</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem @click="repeatMessage(currentMessage)" :disabled="isReplying">
@@ -165,7 +165,7 @@
 
           <!-- 非 master key：仅保留复制全文（纯前端功能） -->
           <div v-else class="flex justify-end">
-            <Button variant="outline" @click="copyMessage(currentMessage.message)">
+            <Button variant="outline" @click="copyMessage(currentMessage.full_text)">
               <ZapIcon class="mr-1 h-4 w-4" />
               复制全文
             </Button>
@@ -281,7 +281,7 @@ function resetContext() {
 
 // 高亮某条消息内容
 function formatMessageContent(msg: SearchHit): string {
-  return highlightSearchTerms(msg.message, props.searchQuery)
+  return highlightSearchTerms(msg.full_text, props.searchQuery)
 }
 
 function setCurrentMessageEl(el: HTMLElement | null) {

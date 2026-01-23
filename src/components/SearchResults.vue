@@ -1,27 +1,15 @@
 <template>
   <div class="space-y-4" ref="searchResultsContainer">
-    <div
-      v-if="totalPages > 1 && searchResults.length > 0"
-      class="hidden lg:flex items-center justify-between gap-3 sticky top-0 z-10 bg-background/90 backdrop-blur px-1 py-2 border-b"
-    >
-      <Pagination
-        :total="totalHits"
-        :sibling-count="1"
-        :default-page="currentPage"
-        :items-per-page="pageSize"
-        show-edges
-      >
+    <div v-if="totalPages > 1 && searchResults.length > 0"
+      class="hidden lg:flex items-center justify-between gap-3 sticky top-0 z-10 bg-background/90 backdrop-blur px-1 py-2 border-b">
+      <Pagination :total="totalHits" :sibling-count="1" :default-page="currentPage" :items-per-page="pageSize"
+        show-edges>
         <PaginationContent class="flex-wrap">
           <PaginationFirst @click="goToPage(1)" />
           <PaginationPrevious @click="goToPage(Math.max(1, currentPage - 1))" />
           <PaginationEllipsis v-if="currentPage > 3" />
-          <PaginationItem
-            v-for="page in visiblePages"
-            :key="page"
-            :value="page"
-            :is-active="page === currentPage"
-            @click="goToPage(page)"
-          >
+          <PaginationItem v-for="page in visiblePages" :key="page" :value="page" :is-active="page === currentPage"
+            @click="goToPage(page)">
             {{ page }}
           </PaginationItem>
           <PaginationEllipsis v-if="currentPage < totalPages - 2" />
@@ -34,11 +22,8 @@
     <!-- 搜索结果列表 -->
     <div v-if="searchResults.length > 0" class="relative">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card
-          v-for="hit in searchResults"
-          :key="`${hit.chat_id}-${hit.id}`"
-          class="transition-all duration-200 h-full flex flex-col"
-        >
+        <Card v-for="hit in searchResults" :key="`${hit.chat_id}-${hit.id}`"
+          class="transition-all duration-200 h-full flex flex-col">
           <CardContent class="flex-1 flex flex-col">
             <div class="space-y-3 flex-1 flex flex-col">
               <!-- 用户和聊天信息 -->
@@ -48,18 +33,14 @@
                     {{ formatMessageType(hit.type) }}
                   </Badge>
                   <UserIcon class="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span
-                    class="font-medium cursor-pointer text-muted-foreground hover:text-primary truncate"
-                    @click="copyMessage(hit.user_id.toString())"
-                    :title="hit.user_full_name"
-                  >
+                  <span class="font-medium cursor-pointer text-muted-foreground hover:text-primary truncate"
+                    @click="copyMessage(hit.user_id.toString())" :title="hit.user_full_name">
                     {{ hit.user_full_name }}
                   </span>
                 </div>
                 <div
                   class="flex items-center space-x-2 text-muted-foreground hover:text-primary cursor-pointer min-w-0 shrink"
-                  @click="copyMessage(`https://t.me/c/${hit.chat_id}/${hit.id}`, '消息链接已复制')"
-                >
+                  @click="copyMessage(`https://t.me/c/${hit.chat_id}/${hit.id}`, '消息链接已复制')">
                   <MessageCircleIcon class="h-4 w-4 text-muted-foreground shrink-0" />
                   <span class="truncate" :title="hit.chat_title || `${hit.chat_id}`">
                     {{ hit.chat_title || `${hit.chat_id}` }}
@@ -69,10 +50,8 @@
 
               <!-- 消息内容 -->
               <div class="space-y-2 flex-1 flex flex-col">
-                <div
-                  class="message-content leading-relaxed p-3 bg-muted/50 rounded-md wrap-break-word flex-1"
-                  v-html="highlightedMessage(hit)"
-                />
+                <div class="message-content leading-relaxed p-3 bg-muted/50 rounded-md wrap-break-word flex-1"
+                  v-html="highlightedMessage(hit)" />
               </div>
 
               <!-- 操作按钮 -->
@@ -82,13 +61,8 @@
                   <span>{{ formatTimestamp(hit.timestamp) }}</span>
                 </div>
                 <div class="flex items-center space-x-2">
-                  <Button
-                    :as="'a'"
-                    :href="`https://t.me/c/${hit.chat_id}/${hit.id}`"
-                    target="_blank"
-                    variant="outline"
-                    title="跳转至消息"
-                  >
+                  <Button :as="'a'" :href="`https://t.me/c/${hit.chat_id}/${hit.id}`" target="_blank" variant="outline"
+                    title="跳转至消息">
                     <LinkIcon class="h-3 w-3" />
                   </Button>
                   <Button variant="outline" @click="openMessageDialog(hit)" title="查看详情">
@@ -102,15 +76,12 @@
       </div>
 
       <!-- 翻页加载时的轻量提示，保持布局不变 -->
-      <div
-        v-if="isPaginating"
-        class="pointer-events-none absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm"
-      >
+      <div v-if="isPaginating"
+        class="pointer-events-none absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm">
         <div class="flex items-center gap-2 text-sm text-muted-foreground">
           <span
             class="inline-block h-4 w-4 rounded-full border-2 border-muted-foreground/30 border-t-primary animate-spin"
-            aria-hidden="true"
-          />
+            aria-hidden="true" />
           <span>正在加载...</span>
         </div>
       </div>
@@ -147,24 +118,14 @@
 
     <!-- 分页 -->
     <div v-if="totalPages > 1" class="flex justify-center mt-6 lg:hidden">
-      <Pagination
-        :total="totalHits"
-        :sibling-count="1"
-        :default-page="currentPage"
-        :items-per-page="pageSize"
-        show-edges
-      >
+      <Pagination :total="totalHits" :sibling-count="1" :default-page="currentPage" :items-per-page="pageSize"
+        show-edges>
         <PaginationContent>
           <PaginationFirst @click="goToPage(1)" />
           <PaginationPrevious @click="goToPage(Math.max(1, currentPage - 1))" />
           <PaginationEllipsis v-if="currentPage > 3" />
-          <PaginationItem
-            v-for="page in visiblePages"
-            :key="page"
-            :value="page"
-            :is-active="page === currentPage"
-            @click="goToPage(page)"
-          >
+          <PaginationItem v-for="page in visiblePages" :key="page" :value="page" :is-active="page === currentPage"
+            @click="goToPage(page)">
             {{ page }}
           </PaginationItem>
           <PaginationEllipsis v-if="currentPage < totalPages - 2" />
@@ -174,12 +135,8 @@
       </Pagination>
     </div>
 
-    <MessageDetailDialog
-      v-model:is-open="isMessageDialogOpen"
-      :message="selectedMessage"
-      :search-query="query"
-      @close="closeMessageDialog"
-    />
+    <MessageDetailDialog v-model:is-open="isMessageDialogOpen" :message="selectedMessage" :search-query="query"
+      @close="closeMessageDialog" />
   </div>
 </template>
 
@@ -245,7 +202,10 @@ const visiblePages = computed(() => {
 
 // 获取高亮的消息内容
 function highlightedMessage(hit: SearchHit): string {
-  return highlightSearchTerms(hit._formatted?.message || hit.message, query.value)
+  const displayText = hit.full_formatted_text || isBlank(hit._formatted?.ocred) && isBlank(hit._formatted?.aigenerated)
+    ? hit._formatted?.message || hit.full_text
+    : hit.full_text
+  return highlightSearchTerms(displayText, query.value)
 }
 
 // 打开消息对话框
@@ -262,5 +222,9 @@ function closeMessageDialog() {
 function goToPage(page: number) {
   if (page < 1 || page > totalPages.value) return
   searchStore.goToPage(page)
+}
+
+function isBlank(str: string | null | undefined): boolean {
+  return !str || /^\s*$/.test(str)
 }
 </script>
