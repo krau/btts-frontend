@@ -46,7 +46,9 @@
                 " class="rounded-md border p-2 cursor-pointer transition-colors min-w-0" :class="msg.id === currentMessageId
                   ? 'bg-primary/10 border-primary text-foreground'
                   : 'bg-muted/40 border-transparent text-muted-foreground hover:bg-muted'
-                  " @click="handleMessageClick(msg)">
+                  " @click="handleMessageClick(msg)"
+                  @mouseenter="handleMessageMouseEnter($event, msg)"
+                  @mouseleave="handleMessageMouseLeave">
                 <div class="flex items-center justify-between text-[11px] mb-1 gap-2">
                   <span class="truncate min-w-0 flex-1" :title="msg.user_full_name || `用户 ${msg.user_id}`">
                     {{ msg.user_full_name || `用户 ${msg.user_id}` }}
@@ -145,6 +147,32 @@
       </div>
     </DialogContent>
   </Dialog>
+
+  <!-- 图片预览悬浮框 (仅桌面端) -->
+  <Teleport to="body">
+    <div
+      v-if="imagePreview.show && isDesktop"
+      class="fixed z-[9999] pointer-events-none"
+      :style="{
+        left: `${imagePreview.x}px`,
+        top: `${imagePreview.y}px`,
+        transform: 'translate(10px, -50%)'
+      }"
+    >
+      <div class="bg-popover border rounded-lg shadow-lg p-2 max-w-md">
+        <img
+          v-if="imagePreview.url"
+          :src="imagePreview.url"
+          alt="预览"
+          class="max-h-96 max-w-full rounded"
+          @error="handleImagePreviewError"
+        />
+        <div v-else class="flex items-center justify-center p-8 text-muted-foreground">
+          <LoaderIcon class="h-6 w-6 animate-spin" />
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -224,6 +252,21 @@ const scrollContainer = ref<HTMLElement | null>(null)
 const currentMessageEl = ref<HTMLElement | null>(null)
 const isInitialLoad = ref(false) // 标记是否为初始加载阶段
 const isAdjustingScroll = ref(false) // 标记程序正在调整滚动位置
+
+// 图片预览状态
+const imagePreview = ref({
+  show: false,
+  url: '',
+  x: 0,
+  y: 0
+})
+let hoverTimer: ReturnType<typeof setTimeout> | null = null
+
+// 检测是否为桌面端 (非触摸设备)
+const isDesktop = ref(true)
+if (typeof window !== 'undefined') {
+  isDesktop.value = !('ontouchstart' in window || navigator.maxTouchPoints > 0)
+}
 
 const currentMessage = computed<SearchHit | null>(() => {
   if (currentMessageId.value == null) return props.message
@@ -640,5 +683,60 @@ const openFileLink = async () => {
   } else {
     toast.error('无法获取文件链接')
   }
+}
+
+// 处理图片消息鼠标悬停
+function handleMessageMouseEnter(event: MouseEvent, msg: SearchHit) {
+  // 仅桌面端且仅图片类型消息才启用预览
+  if (!isDesktop.value || msg.type !== 'photo') return
+
+  // 清除之前的定时器
+  if (hoverTimer) {
+    clearTimeout(hoverTimer)
+  }
+
+  // 立即获取元素位置信息，避免定时器回调时 currentTarget 为 null
+  const target = event.currentTarget as HTMLElement
+  if (!target) return
+
+  const rect = target.getBoundingClientRect()
+  const previewX = rect.right
+  const previewY = rect.top + rect.height / 2
+
+  // 延迟 500ms 显示预览
+  hoverTimer = setTimeout(async () => {
+    imagePreview.value.x = previewX
+    imagePreview.value.y = previewY
+    imagePreview.value.show = true
+    imagePreview.value.url = ''
+
+    // 异步加载图片 URL
+    try {
+      const url = await getFileUrl(msg)
+      // 仅在预览仍然显示时更新 URL
+      if (imagePreview.value.show) {
+        imagePreview.value.url = url
+      }
+    } catch (error) {
+      console.error('加载图片预览失败:', error)
+      imagePreview.value.show = false
+    }
+  }, 500)
+}
+
+function handleMessageMouseLeave() {
+  // 清除定时器
+  if (hoverTimer) {
+    clearTimeout(hoverTimer)
+    hoverTimer = null
+  }
+  // 隐藏预览
+  imagePreview.value.show = false
+  imagePreview.value.url = ''
+}
+
+function handleImagePreviewError() {
+  imagePreview.value.show = false
+  imagePreview.value.url = ''
 }
 </script>
