@@ -27,8 +27,8 @@
           <CardContent class="flex-1 flex flex-col">
             <div class="space-y-3 flex-1 flex flex-col">
               <!-- 用户和聊天信息 -->
-              <div class="flex items-center justify-between text-sm gap-2">
-                <div class="flex items-center space-x-2 min-w-0 shrink">
+              <div class="grid grid-cols-2 items-center gap-2 text-sm">
+                <div class="flex items-center space-x-2 min-w-0">
                   <Badge :variant="getMessageTypeVariant(hit.type)" class="shrink-0">
                     {{ formatMessageType(hit.type) }}
                   </Badge>
@@ -39,10 +39,10 @@
                   </span>
                 </div>
                 <div
-                  class="flex items-center space-x-2 text-muted-foreground hover:text-primary cursor-pointer min-w-0 shrink"
+                  class="flex items-center justify-end space-x-2 text-muted-foreground hover:text-primary cursor-pointer min-w-0"
                   @click="copyMessage(`https://t.me/c/${hit.chat_id}/${hit.id}`, '消息链接已复制')">
                   <MessageCircleIcon class="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span class="truncate" :title="hit.chat_title || `${hit.chat_id}`">
+                  <span class="truncate text-right" :title="hit.chat_title || `${hit.chat_id}`">
                     {{ hit.chat_title || `${hit.chat_id}` }}
                   </span>
                 </div>

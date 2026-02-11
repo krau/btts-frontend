@@ -2,71 +2,47 @@
   <Dialog :open="isOpen" @update:open="handleUpdateOpen">
     <DialogContent class="sm:max-w-150 max-h-[80vh]">
       <DialogHeader>
-        <DialogTitle class="flex items-center space-x-2">
-          <Badge v-if="currentMessage" :variant="getMessageTypeVariant(currentMessage.type)">
+        <DialogTitle class="flex items-center gap-2 min-w-0">
+          <Badge v-if="currentMessage" :variant="getMessageTypeVariant(currentMessage.type)" class="shrink-0">
             {{ formatMessageType(currentMessage?.type || '') }}
           </Badge>
-          <span v-if="currentMessage?.user_full_name">{{ currentMessage.user_full_name }}</span>
+          <span v-if="currentMessage?.user_full_name" class="truncate" :title="currentMessage.user_full_name">
+            {{ currentMessage.user_full_name }}
+          </span>
         </DialogTitle>
       </DialogHeader>
 
       <div class="mt-2 flex flex-col gap-2" style="max-height: 50vh">
-        <div
-          v-if="currentMessage?.chat_title"
-          class="text-sm text-muted-foreground flex items-center"
-        >
-          <MessageCircleIcon class="h-4 w-4 mr-2" />
-          <a
-            :href="`https://t.me/c/${currentMessage?.chat_id}/${currentMessage?.id}`"
-            target="_blank"
-            class="hover:text-primary transition-colors"
-          >
+        <div v-if="currentMessage?.chat_title" class="text-sm text-muted-foreground flex items-center min-w-0">
+          <MessageCircleIcon class="h-4 w-4 mr-2 shrink-0" />
+          <a :href="`https://t.me/c/${currentMessage?.chat_id}/${currentMessage?.id}`" target="_blank"
+            class="hover:text-primary transition-colors truncate min-w-0" :title="currentMessage.chat_title">
             {{ currentMessage.chat_title }}
           </a>
         </div>
 
         <!-- 附近消息列表 -->
-        <div
-          ref="scrollContainer"
-          class="space-y-2 pb-2 flex-1 overflow-y-auto"
-          style="scrollbar-gutter: stable"
-          @scroll="handleScroll"
-        >
-          <div
-            v-if="isLoadingInitial"
-            class="flex justify-center py-6 text-sm text-muted-foreground"
-          >
+        <div ref="scrollContainer" class="space-y-2 pb-2 flex-1 overflow-y-auto" style="scrollbar-gutter: stable"
+          @scroll="handleScroll">
+          <div v-if="isLoadingInitial" class="flex justify-center py-6 text-sm text-muted-foreground">
             <LoaderIcon class="h-4 w-4 animate-spin mr-2" />
             正在加载附近消息...
           </div>
 
           <div v-else>
             <div v-if="messages.length" class="space-y-1">
-              <div
-                v-if="isLoadingMoreBefore"
-                class="flex justify-center py-1 text-[11px] text-muted-foreground"
-              >
+              <div v-if="isLoadingMoreBefore" class="flex justify-center py-1 text-[11px] text-muted-foreground">
                 加载更早的消息...
               </div>
 
-              <div
-                v-for="msg in messages"
-                :key="msg.id"
-                :data-msg-id="msg.id"
-                :ref="
-                  (el) =>
-                    msg.id === currentMessageId && setCurrentMessageEl(el as HTMLElement | null)
-                "
-                class="rounded-md border p-2 cursor-pointer transition-colors"
-                :class="
-                  msg.id === currentMessageId
-                    ? 'bg-primary/10 border-primary text-foreground'
-                    : 'bg-muted/40 border-transparent text-muted-foreground hover:bg-muted'
-                "
-                @click="handleMessageClick(msg)"
-              >
-                <div class="flex items-center justify-between text-[11px] mb-1">
-                  <span class="truncate">
+              <div v-for="msg in messages" :key="msg.id" :data-msg-id="msg.id" :ref="(el) =>
+                msg.id === currentMessageId && setCurrentMessageEl(el as HTMLElement | null)
+                " class="rounded-md border p-2 cursor-pointer transition-colors" :class="msg.id === currentMessageId
+                  ? 'bg-primary/10 border-primary text-foreground'
+                  : 'bg-muted/40 border-transparent text-muted-foreground hover:bg-muted'
+                  " @click="handleMessageClick(msg)">
+                <div class="flex items-center justify-between text-[11px] mb-1 gap-2">
+                  <span class="truncate min-w-0 flex-1" :title="msg.user_full_name || `用户 ${msg.user_id}`">
                     {{ msg.user_full_name || `用户 ${msg.user_id}` }}
                   </span>
                   <span class="flex items-center gap-1 shrink-0">
@@ -76,21 +52,13 @@
                     </span>
                   </span>
                 </div>
-                <div
-                  class="message-content text-sm leading-relaxed wrap-break-word"
-                  :class="
-                    msg.id === currentMessageId
-                      ? 'font-semibold text-foreground'
-                      : 'text-muted-foreground'
-                  "
-                  v-html="formatMessageContent(msg)"
-                ></div>
+                <div class="message-content text-sm leading-relaxed wrap-break-word" :class="msg.id === currentMessageId
+                  ? 'font-semibold text-foreground'
+                  : 'text-muted-foreground'
+                  " v-html="formatMessageContent(msg)"></div>
               </div>
 
-              <div
-                v-if="isLoadingMoreAfter"
-                class="flex justify-center py-1 text-[11px] text-muted-foreground"
-              >
+              <div v-if="isLoadingMoreAfter" class="flex justify-center py-1 text-[11px] text-muted-foreground">
                 加载更晚的消息...
               </div>
             </div>
@@ -113,19 +81,13 @@
               快捷操作
             </div>
             <Badge v-if="requestStatus && isMasterKey" :variant="requestStatus.variant">{{
-              requestStatus.text
-            }}</Badge>
+              requestStatus.text }}</Badge>
           </div>
 
           <!-- master key：展示完整操作（回复、复读、文件预览等） -->
           <div v-if="isMasterKey" class="flex space-x-2">
-            <Input
-              v-model="replyText"
-              placeholder="输入回复内容..."
-              class="flex-1"
-              :disabled="isReplying"
-              @keydown.enter="handleReplySubmit"
-            />
+            <Input v-model="replyText" placeholder="输入回复内容..." class="flex-1" :disabled="isReplying"
+              @keydown.enter="handleReplySubmit" />
             <DropdownMenu>
               <DropdownMenuTrigger as-child>
                 <Button variant="outline" title="快捷功能">
@@ -145,19 +107,10 @@
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button
-              :disabled="currentMessage.type === 'text'"
-              variant="outline"
-              title="查看文件"
-              @click="openFileLink"
-            >
+            <Button :disabled="currentMessage.type === 'text'" variant="outline" title="查看文件" @click="openFileLink">
               <FileIcon />
             </Button>
-            <Button
-              @click="handleReplySubmit"
-              :disabled="!replyText.trim() || isReplying"
-              title="发送"
-            >
+            <Button @click="handleReplySubmit" :disabled="!replyText.trim() || isReplying" title="发送">
               <SendIcon v-if="!isReplying" />
               <LoaderIcon v-else class="animate-spin" />
             </Button>
