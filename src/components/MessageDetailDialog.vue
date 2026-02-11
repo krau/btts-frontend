@@ -24,13 +24,19 @@
         <!-- 附近消息列表 -->
         <div ref="scrollContainer" class="space-y-2 pb-2 flex-1 overflow-y-auto" style="scrollbar-gutter: stable"
           @scroll="handleScroll">
-          <div v-if="isLoadingInitial" class="flex justify-center py-6 text-sm text-muted-foreground">
-            <LoaderIcon class="h-4 w-4 animate-spin mr-2" />
-            正在加载附近消息...
-          </div>
+          <div v-if="messages.length" class="space-y-1">
+              <!-- 上方加载骨架 -->
+              <div v-if="isInitialLoad && messages.length === 1" class="space-y-1 animate-pulse">
+                <div v-for="i in 3" :key="`skeleton-before-${i}`" class="rounded-md border p-2 bg-muted/20">
+                  <div class="flex items-center justify-between text-[11px] mb-1 gap-2">
+                    <div class="h-3 bg-muted rounded w-24"></div>
+                    <div class="h-3 bg-muted rounded w-20"></div>
+                  </div>
+                  <div class="h-4 bg-muted rounded w-full mb-1"></div>
+                  <div class="h-4 bg-muted rounded w-3/4"></div>
+                </div>
+              </div>
 
-          <div v-else>
-            <div v-if="messages.length" class="space-y-1">
               <div v-if="isLoadingMoreBefore" class="flex justify-center py-1 text-[11px] text-muted-foreground">
                 加载更早的消息...
               </div>
@@ -58,14 +64,26 @@
                   " v-html="formatMessageContent(msg)"></div>
               </div>
 
+              <!-- 下方加载骨架 -->
+              <div v-if="isInitialLoad && messages.length === 1" class="space-y-1 animate-pulse">
+                <div v-for="i in 3" :key="`skeleton-after-${i}`" class="rounded-md border p-2 bg-muted/20">
+                  <div class="flex items-center justify-between text-[11px] mb-1 gap-2">
+                    <div class="h-3 bg-muted rounded w-24"></div>
+                    <div class="h-3 bg-muted rounded w-20"></div>
+                  </div>
+                  <div class="h-4 bg-muted rounded w-full mb-1"></div>
+                  <div class="h-4 bg-muted rounded w-3/4"></div>
+                </div>
+              </div>
+
               <div v-if="isLoadingMoreAfter" class="flex justify-center py-1 text-[11px] text-muted-foreground">
                 加载更晚的消息...
               </div>
-            </div>
+          </div>
 
-            <div v-else class="flex justify-center py-6 text-sm text-muted-foreground">
-              暂无更多消息
-            </div>
+          <div v-else class="flex flex-col items-center justify-center py-12 text-sm text-muted-foreground">
+            <LoaderIcon class="h-6 w-6 animate-spin mb-3" />
+            <p>正在加载消息...</p>
           </div>
         </div>
 
@@ -306,6 +324,7 @@ async function loadInitialContext(base: SearchHit) {
 
   // 标记为初始加载阶段
   isInitialLoad.value = true
+
   // 立即显示当前消息，不阻塞用户交互
   messages.value = [base]
   currentMessageId.value = base.id
@@ -315,7 +334,12 @@ async function loadInitialContext(base: SearchHit) {
   lastBeforeAnchorId.value = null
   lastAfterAnchorId.value = null
 
-  // 异步加载附近消息（不设置 isLoadingInitial，因为已有当前消息显示）
+  // 等待 DOM 渲染当前消息和骨架屏
+  await nextTick()
+  // 先滚动到当前消息位置（此时有骨架屏占位）
+  scrollToCurrentMessage()
+
+  // 异步加载附近消息
   try {
     // 初始加载：以当前消息为起点，加载前后各 10 条，合并为单次请求
     const ids: number[] = []
