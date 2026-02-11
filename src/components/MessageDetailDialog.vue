@@ -152,19 +152,19 @@
   <Teleport to="body">
     <div
       v-if="imagePreview.show && isDesktop"
-      class="fixed z-[9999] pointer-events-none"
+      class="fixed z-99 pointer-events-none"
       :style="{
         left: `${imagePreview.x}px`,
         top: `${imagePreview.y}px`,
         transform: 'translate(10px, -50%)'
       }"
     >
-      <div class="bg-popover border rounded-lg shadow-lg p-2 max-w-md">
+      <div class="bg-popover border rounded-lg shadow-lg p-2 max-w-2xl">
         <img
           v-if="imagePreview.url"
           :src="imagePreview.url"
           alt="预览"
-          class="max-h-96 max-w-full rounded"
+          class="max-h-256 max-w-full rounded"
           @error="handleImagePreviewError"
         />
         <div v-else class="flex items-center justify-center p-8 text-muted-foreground">
@@ -291,6 +291,13 @@ function resetContext() {
   if (scrollContainer.value) {
     scrollContainer.value.scrollTop = 0
   }
+  // 清理图片预览状态
+  if (hoverTimer) {
+    clearTimeout(hoverTimer)
+    hoverTimer = null
+  }
+  imagePreview.value.show = false
+  imagePreview.value.url = ''
 }
 
 // 高亮某条消息内容
@@ -595,8 +602,16 @@ function handleMessageClick(msg: SearchHit) {
 // 处理对话框打开状态变化
 function handleUpdateOpen(value: boolean) {
   emit('update:isOpen', value)
-  // 关闭时不立即重置，让动画自然完成
-  // 状态会在下次打开时通过 loadInitialContext 重置
+  // 关闭时立即清理图片预览
+  if (!value) {
+    if (hoverTimer) {
+      clearTimeout(hoverTimer)
+      hoverTimer = null
+    }
+    imagePreview.value.show = false
+    imagePreview.value.url = ''
+  }
+  // 其他状态会在下次打开时通过 loadInitialContext 重置
 }
 
 // 打开对话框时初始化附近消息
