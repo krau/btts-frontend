@@ -1,7 +1,7 @@
 <template>
   <Dialog :open="isOpen" @update:open="handleUpdateOpen">
-    <DialogContent class="sm:max-w-150 max-h-[80vh]">
-      <DialogHeader class="min-w-0">
+    <DialogContent class="sm:max-w-150 h-[80vh] flex flex-col">
+      <DialogHeader class="min-w-0 shrink-0">
         <DialogTitle class="flex items-center gap-2 min-w-0">
           <Badge v-if="currentMessage" :variant="getMessageTypeVariant(currentMessage.type)" class="shrink-0">
             {{ formatMessageType(currentMessage?.type || '') }}
@@ -12,7 +12,7 @@
         </DialogTitle>
       </DialogHeader>
 
-      <div class="mt-2 flex flex-col gap-2 min-w-0" style="max-height: 50vh">
+      <div class="flex flex-col gap-2 min-w-0 flex-1 overflow-hidden">
         <div v-if="currentMessage?.chat_title" class="text-sm text-muted-foreground flex items-center min-w-0 shrink-0">
           <MessageCircleIcon class="h-4 w-4 mr-2 shrink-0" />
           <a :href="`https://t.me/c/${currentMessage?.chat_id}/${currentMessage?.id}`" target="_blank"
@@ -70,7 +70,7 @@
         </div>
 
         <!-- 输入框 / 操作区（固定在底部区域） -->
-        <div v-if="currentMessage" class="mt-2">
+        <div v-if="currentMessage" class="shrink-0 mt-auto pt-2 border-t">
           <div class="flex items-center justify-between mb-2">
             <div class="text-sm font-medium flex items-center" v-if="isMasterKey">
               <ReplyIcon class="h-4 w-4 text-primary" />
