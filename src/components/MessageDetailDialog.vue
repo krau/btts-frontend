@@ -1,19 +1,19 @@
 <template>
   <Dialog :open="isOpen" @update:open="handleUpdateOpen">
     <DialogContent class="sm:max-w-150 max-h-[80vh]">
-      <DialogHeader>
+      <DialogHeader class="min-w-0">
         <DialogTitle class="flex items-center gap-2 min-w-0">
           <Badge v-if="currentMessage" :variant="getMessageTypeVariant(currentMessage.type)" class="shrink-0">
             {{ formatMessageType(currentMessage?.type || '') }}
           </Badge>
-          <span v-if="currentMessage?.user_full_name" class="truncate" :title="currentMessage.user_full_name">
+          <span v-if="currentMessage?.user_full_name" class="truncate min-w-0" :title="currentMessage.user_full_name">
             {{ currentMessage.user_full_name }}
           </span>
         </DialogTitle>
       </DialogHeader>
 
-      <div class="mt-2 flex flex-col gap-2" style="max-height: 50vh">
-        <div v-if="currentMessage?.chat_title" class="text-sm text-muted-foreground flex items-center min-w-0">
+      <div class="mt-2 flex flex-col gap-2 min-w-0" style="max-height: 50vh">
+        <div v-if="currentMessage?.chat_title" class="text-sm text-muted-foreground flex items-center min-w-0 shrink-0">
           <MessageCircleIcon class="h-4 w-4 mr-2 shrink-0" />
           <a :href="`https://t.me/c/${currentMessage?.chat_id}/${currentMessage?.id}`" target="_blank"
             class="hover:text-primary transition-colors truncate min-w-0" :title="currentMessage.chat_title">
@@ -37,7 +37,7 @@
 
               <div v-for="msg in messages" :key="msg.id" :data-msg-id="msg.id" :ref="(el) =>
                 msg.id === currentMessageId && setCurrentMessageEl(el as HTMLElement | null)
-                " class="rounded-md border p-2 cursor-pointer transition-colors" :class="msg.id === currentMessageId
+                " class="rounded-md border p-2 cursor-pointer transition-colors min-w-0" :class="msg.id === currentMessageId
                   ? 'bg-primary/10 border-primary text-foreground'
                   : 'bg-muted/40 border-transparent text-muted-foreground hover:bg-muted'
                   " @click="handleMessageClick(msg)">
